@@ -85,29 +85,6 @@ export interface Organisation {
   url: string;
 }
 
-export interface Entity {
-  urn: string;
-  url?: string;
-  owner?: Company | null;
-  status: 'DRAFT_UNPUBLISHED' | 'PUBLISH_PENDING' | 'PUBLISH' | 'PUBLISHED' | 'PUBLISHED_WITH_DRAFTS';
-  name: string;
-  language: string; // ISO 639-1
-  variant?: string;
-  publishTimestamp?: string | null;
-  updatedTimestamp?: string | null;
-  // Content Item Collections
-  texts?: TextItem[];
-  doubles?: DoubleItem[];
-  dateTimes?: DateTimeItem[];
-  booleans?: BooleanItem[];
-  images?: ImageItem[];
-  templates?: TemplateItem[];
-  markdowns?: MarkdownItem[];
-  latLongs?: LatLongItem[];
-  longs?: LongItem[];
-  money?: MoneyItem[];
-  jsons?: JsonItem[];
-}
 
 export interface Company {
   urn: string;
@@ -193,8 +170,32 @@ export interface Telephone {
 }
 
 // ==========================================
-// CONTENT ITEMS (Primitives)
+// CONTENT ENTITY &  ITEMS (Primitives)
 // ==========================================
+
+export interface Entity {
+  urn: string;
+  url?: string;
+  owner?: Company | null;
+  status: 'DRAFT_UNPUBLISHED' | 'PUBLISH_PENDING' | 'PUBLISH' | 'PUBLISHED' | 'PUBLISHED_WITH_DRAFTS';
+  name: string;
+  language: string; // ISO 639-1
+  variant?: string;
+  publishTimestamp?: string | null;
+  updatedTimestamp?: string | null;
+  // Content Item Collections
+  texts?: TextItem[];
+  doubles?: DoubleItem[];
+  dateTimes?: DateTimeItem[];
+  booleans?: BooleanItem[];
+  images?: ImageItem[];
+  templates?: TemplateItem[];
+  markdowns?: MarkdownItem[];
+  latLongs?: LatLongItem[];
+  longs?: LongItem[];
+  money?: MoneyItem[];
+  jsons?: JsonItem[];
+}
 
 export interface TextItem { 
   urn: string;
@@ -390,15 +391,4 @@ export interface MarkdownItemHistory {
   url: string;
 }
 
-
-export interface TemplateItem { urn: string; templateId: string; }
-export interface BooleanItemBase { urn: string; value: boolean; }
-export interface DateTimeItemBase { urn: string; value: string; }
-export interface DoubleItemBase { urn: string; value: number; }
-export interface ImageItemBase { urn: string; url: string; }
-export interface JsonItemBase { urn: string; value: any; }
-export interface LatLongItemBase { urn: string; latitude: number; longitude: number; }
-export interface LongItemBase { urn: string; value: number; }
-export interface MarkdownItemBase { urn: string; value: string; }
-export interface MoneyItemHistory { urn: string; history: any[]; url: string; } 
 

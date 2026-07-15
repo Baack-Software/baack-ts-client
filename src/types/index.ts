@@ -63,17 +63,44 @@ export interface ClientContext {
   hasSession?: boolean | null;
   hasBearer?: boolean | null;
   user?: User | null;
-  client?: ApiClient | null; // Uses the updated ApiClient type above
+  client?: ApiClient | null;
   company?: Company | null;
   identity?: Identity | null;
   loginIframeSrc?: string | null;
 }
 
 
-/** Placeholder for User object referenced in ClientContext */
+/** 
+ * The specific authentication/verification states of a user.
+ */
+export type UserState = 
+  | 'UNVERIFIED' 
+  | 'VERIFIED' 
+  | 'MODERATED';
+
+/** 
+ * The specific roles assigned to a user within the Baack ecosystem.
+ */
+export type UserRole = 
+  | 'ANONYMOUS' 
+  | 'DEFAULT' 
+  | 'COMMENTER' 
+  | 'EDITOR' 
+  | 'PUBLISHER' 
+  | 'ADMIN' 
+  | 'SUPER';
+
+/**
+ * Represents a session user returned in contexts like the API client context 
+ * when user-based authentication is being used.
+ */
 export interface User {
+  /** The URN of the user */
   urn: string;
-  identity?: Identity | null;
+  /** The user role assigned for the login user */
+  role?: UserRole | null;
+  /** The status of the login user (e.g., VERIFIED) */
+  status?: UserState | null;
 }
 
 // ==========================================

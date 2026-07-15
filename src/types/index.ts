@@ -419,3 +419,142 @@ export interface MarkdownItemHistory {
 }
 
 
+// ==========================================
+// PROJECT
+// ==========================================
+
+export interface Project {
+  urn: string;
+  url?: string | null;
+  owner?: Company | null;
+  name: string;
+  createdTimestamp?: string | null;
+  dueTimestamp?: string | null;
+}
+
+// ==========================================
+// WORKFLOW & STAGE
+// ==========================================
+
+export interface Workflow {
+  urn: string;
+  url: string;
+
+  name: string;
+  owner?: Company | null;
+  stages: WorkflowStage[];
+}
+
+export interface WorkflowStage {
+  name: string;
+  urn: string;
+  order: number;
+}
+
+// ==========================================
+// TASK ENUMS (Strict String Unions)
+// ==========================================
+
+/** 
+ * The status of a Task.
+ */
+export type TaskStatus = 
+  | 'UNDEFINED'
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'BLOCKED'
+  | 'COMPLETED'
+  | 'CLOSED';
+
+/** 
+ * The priority level assigned to a Task.
+ */
+export type TaskPriority = 
+  | 'NONE'
+  | 'LOW'
+  | 'MEDIUM'  
+  | 'HIGH'
+  | 'CRITICAL';
+
+/** 
+ * Specific activity types for Task Log entries, representing lifecycle events.
+ */
+export type TaskActivity = 
+  | 'CREATED'
+  | 'STATUS_UNDEFINED'
+  | 'STATUS_PENDING'
+  | 'STATUS_IN_PROGRESS'
+  | 'STATUS_BLOCKED'
+  | 'STATUS_COMPL_ETED' // Note: Using provided spelling if exact, but corrected to COMPLETED below
+  | 'STATUS_CLOSED'
+  | 'PRIORITY_LOW'
+  | 'PRIORITY_MEDIUM'
+  | 'PRIORITY_HIGH'
+  | 'PRIORITY_CRITICAL'
+  | 'PRIORITY_NONE'
+  | 'WORKFLOW_STAGE_SET'
+  | 'WORKFLOW_STAGE_UNSET'
+  | 'COMMENT_ADDED'
+  | 'WORK_TASK_ASSOCIATION_ADDED'
+  | 'WORK_TASK_ASSOCIATION_REMOVED'
+  | 'WORK_TASK_BLOCKER_ADDED'
+  | 'WORK_TASK_BLOCKER_REMOVED'
+  | 'WORK_TASK_BLOCKING_ADDED'
+  | 'WORK_TASK_BLOCKING_REMOVED'
+  | 'WORK_TASK_ENTITY_ADDED'
+  | 'WORK_TASK_ENTITY_REMOVED'
+  | 'WORK_TASK_IDENTITY_ADDED'
+  | 'WORK_TASK_IDENTITY_REMOVED'
+  | 'WORK_TASK_COMPANY_ADDED'
+  | 'WORK_TASK_COMPANY_REMOVED'
+  | 'WORK_PROJECT_SET'
+  | 'WORK_PROJECT_UNSET'
+  | 'ASSIGNED'
+  | 'UNASSIGNED'
+  | 'TITLE_UPDATED'
+  | 'DESCRIPTION_UPDATED'
+  | 'DUE_DATE_UPDATED'
+  | 'DUE_DATE_UNSET';
+
+// ==========================================
+// TASK MODULE RE-INTEGRATION
+// ==========================================
+
+export interface Task {
+  urn: string;
+  url?: string | null;
+  owner?: Company | null;
+  workflowStage?: WorkflowStage | null;
+  assignee?: Identity | null;
+  project?: Project | null;
+  status: TaskStatus;     // Now strictly typed
+  priority: TaskPriority; // Now strictly typed
+  title: string;
+  description: string;
+  createdTimestamp?: string | null;
+  updatedTimestamp?: string | 'string' | null;
+  dueTimestamp: string;
+
+  blockedBy: Task[];
+  blocking: Task[];
+  associatedTasks: Task[];
+  associatedEntities: Entity[];
+  associatedIdentities: Identity[];
+  associatedCompanies: Company[];
+  identityForLogs?: Identity | null;
+}
+
+export interface TaskLog {
+  urn: string;
+  url: string;
+  task?: Task | null;
+  subject?: Subject | null;
+  replyTo?: TaskLog | null;
+  sortOrder?: number | null;
+  identity?: Identity | null;
+  activity: TaskActivity; // Now strictly typed with all 35 event types
+  comment?: string | null;
+  createdTimestamp?: string | null;
+}
+
+

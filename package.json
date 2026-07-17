@@ -1,20 +1,19 @@
 {
-  "name": "baack-ts-client",
+  "name": "baack-client",
   "version": "1.0.0",
-  "description": "",
+  "description": "Official TypeScript client for Baack.co Headless CMS",
   "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc"
-
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "devDependencies": {
-    "@types/node": "^26.1.1",
-    "typescript": "^7.0.2"
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
   }
 }
+

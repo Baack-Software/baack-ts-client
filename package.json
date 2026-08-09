@@ -1,6 +1,7 @@
 {
   "name": "baack-client",
-  "version": "1.0.0",
+  "version": "0.0.1",
+  "type": "module",
   "description": "Official TypeScript client for Baack.co Headless CMS",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

@@ -20,7 +20,8 @@ export interface Pagination {
  * Represents an API client used for authentication and integration.
  */
 export interface ApiClient {
-  urn: string;
+  urn?: string;
+  url?: string;
   /** 
    * Scope of the API client. 
    * For server-side bearer tokens, use 'api.baack.co'. 
@@ -169,7 +170,7 @@ export interface Address {
   region?: string | null;
   postalCode: string;
   countryCode: string;
-  addressType?: string | null; // Represents AddressType enum
+  addressType?: string | null; // Represents AddressType
 }
 
 export interface Email {
@@ -225,7 +226,20 @@ export interface Entity {
 }
 
 export interface TextItem { 
-  urn: string;
+  urn?: string;
+  url?: string;
+  name: string;
+  value: string;
+  sortOrder: number;
+  entity?: Entity | null;
+  isPublished?: boolean | null;
+  createdTimestamp?: string | null;
+  history?: TextItemHistory | null;
+}
+
+export interface TemplateItem {
+  urn?: string;
+  url?: string;
   name: string;
   value: string;
   sortOrder: number;
@@ -236,7 +250,7 @@ export interface TextItem {
 }
 
 export interface BooleanItem {
-  urn: string;
+  urn?: string;
   entity?: Entity | null;
   url?: string;
   name: string;
@@ -248,7 +262,7 @@ export interface BooleanItem {
 }
 
 export interface DateTimeItem {
-  urn: string;
+  urn?: string;
   url?: string;
   entity?: Entity | null;
   name: string;
@@ -260,7 +274,7 @@ export interface DateTimeItem {
 }
 
 export interface DoubleItem {
-  urn: string;
+  urn?: string;
   url?: string;
   name: string;
   sortOrder: number;
@@ -272,7 +286,7 @@ export interface DoubleItem {
 }
 
 export interface ImageItem {
-  urn: string;
+  urn?: string;
   url?: string;
   name: string;
   sortOrder: number;
@@ -287,19 +301,19 @@ export interface ImageItem {
 }
 
 export interface JsonItem {
-  urn: string;
+  urn?: string;
+  url?: string;
   name: string;
   sortOrder: number;
   value: unknown;
   entity?: Entity | null;
-  url?: string;
   isPublished?: boolean | null;
   createdTimestamp?: string | null;
   history?: JsonItemHistory | null;
 }
 
 export interface LatLongItem {
-  urn: string;
+  urn?: string;
   url?: string;
   entity?: Entity | null;
   name: string;
@@ -312,32 +326,32 @@ export interface LatLongItem {
 }
 
 export interface LongItem {
-  urn: string;
+  urn?: string;
+  url?: string;
   name: string;
   sortOrder: number;
   value: number; // 64-bit integer
   entity?: Entity | null;
-  url?: string;
   isPublished?: boolean | null;
   createdTimestamp?: string | null;
   history?: LongItemHistory | null;
 }
 
 export interface MarkdownItem {
-  urn: string;
+  urn?: string;
+  url?: string;
   name: string;
   sortOrder: number;
   value: string; // Markdown content
   entity?: Entity | null;
-  url?: string;
   isPublished?: boolean | null;
   createdTimestamp?: string | null;
   history?: MarkdownItemHistory | null;
 }
 
 export interface MoneyItem {
-  urn: string;
-  url: string;
+  urn?: string;
+  url?: string;
   name: string;
   sortOrder: number;
   currencyCode: string; // e.g., "GBP"
@@ -415,6 +429,13 @@ export interface MarkdownItemHistory {
   item?: MarkdownItem | null;
   pagination?: Pagination | null;
   history: MarkdownItem[];
+  url: string;
+}
+
+export interface MoneyItemHistory {
+  item?: MoneyItem | null;
+  pagination?: Pagination | null;
+  history: MoneyItem[];
   url: string;
 }
 
@@ -544,6 +565,24 @@ export interface Task {
   identityForLogs?: Identity | null;
 }
 
+// In the context of a task log the subject is the reference to the assignee on assignment
+export type SubjectType =
+| 'WORKFLOW_STAGE'
+| 'ASSOCIATION'
+| 'DEPENDENCY'
+| 'ENTITY'
+| 'IDENTITY'
+| 'COMPANY'
+| 'PROJECT'
+| 'ASSIGNEE'
+;
+
+export interface Subject {
+  urn: string;
+  url: string;
+  type: SubjectType;
+}
+
 export interface TaskLog {
   urn: string;
   url: string;
@@ -557,4 +596,237 @@ export interface TaskLog {
   createdTimestamp?: string | null;
 }
 
+
+/**
+ * SEARCH MODULE
+ */
+
+export type SearchState = 
+  | 'PENDING' 
+  | 'RUNNING' 
+  | 'PARTIAL_RESULT' 
+  | 'FULL_RESULT';
+
+export type SearchOrder = 'UNDEFINED' | 'NAME';
+
+export type IncludeScope = 
+  | 'ENTITY' 
+  | 'ENTITY_LIST' 
+  | 'GROUP' 
+  | 'GROUP_MEMBERSHIP' 
+  | 'IDENTITY' 
+  | 'PROJECT' 
+  | 'TASK';
+
+/**
+ * The specific type of content returned in a search result item.
+ */
+export type SearchItemType = 
+  | 'ENTITY' 
+  | 'ENTITY_LIST' 
+  | 'GROUP' 
+  | 'GROUP_MEMBERSHIP' 
+  | 'IDENTITY' 
+  | 'PROJECT' 
+  | 'TASK';
+
+
+/**
+ * Represents a search operation and its associated results.
+ */
+export interface Search {
+  /** The URN of the search */
+  urn?: string;
+  /** The URL to access for results of the search */
+  url?: string;
+  /** The company owner of this search */
+  owner?: Company | null;
+  /** The timestamp this search was created (ISO 8601) */
+  createdTimestamp?: string | null;
+  /** The timestamp of the last update (ISO 8601) */
+  updatedTimestamp?: string | null;
+  /** The current state of the search process */
+  status?: SearchState | null;
+  /** The requested ordering of search results */
+  order?: SearchOrder | null;
+  /** The collection of scopes to include in the search scope */
+  includeScopes: IncludeScope[];
+  /** The actual result items found by the search */
+  items?: SearchItem[];
+  /** Pagination details for navigating through large result sets */
+  pagination?: Pagination | null;
+}
+
+/**
+ * Represents a single item returned within a search result.
+ * This is a polymorphic type that can contain different content models.
+ */
+export interface SearchItem {
+  /** The URN of the result item */
+  urn: string;
+  /** The URL to access the specific item */
+  url: string;
+  /** The sort ordering value used internally to rank results */
+  sortOrder?: number | null;
+  /** The category/type of this search item */
+  type: SearchItemType;
+  /** The display name of the search item (if applicable) */
+  name?: string | null;
+  /** 
+   * The actual content of the item. 
+   * This is a union of all possible searchable entities.
+   */
+  item?: Entity | EntityList | Group | Identity | Project | Task | null;
+}
+
+/**
+ * A group of identities (people) which can be used for various purposes 
+ * like permissions or collections of identities like a mailing list or a community.
+ */
+export interface Group {
+  /** The URN of the membership group */
+  urn?: string;
+  /** The URL of the membership group */
+  url?: string;
+  /** The name of the membership group (Max length 255) */
+  name: string;
+  /** The company which owns the group */
+  owner?: Company | null;
+  /** Content entities associated with the group */
+  entity?: Entity | null;
+}
+
+/** 
+ * The specific states for a group membership configuration.
+ */
+export type MembershipState = 
+  | 'PENDING_ACCEPTANCE'
+  | 'PENDING_APPROVAL'
+  | 'ACTIVE'
+  | 'BLOCKED_BY_MEMBER'
+  | 'BANNED_BY_OWNER';
+
+/** 
+ * The method by which a user was enrolled in a group (for compliance reporting).
+ */
+export type MembershipEnrollment = 
+  | 'BY_MEMBER_WITH_CONSENT' 
+  | 'BY_OWNER_WITHOUT_CONSENT';
+
+/** 
+ * User preference for receiving notifications via various channels.
+ */
+export type NotificationState = 
+  | 'SUBSCRIBED' 
+  | 'UNSUBSCRIBED';
+
+/**
+ * Represents a group membership configuration.
+ * Note that the presence of a membership does not imply that the membership is active.
+ */
+export interface GroupMembership {
+  /** The URN for the membership configuration */
+  urn: string;
+  /** The URL for accessing this membership configuration */
+  url?: string | null;
+  /** The membership group this subscription configuration is associated with */
+  group?: Group | null;
+  /** The identity this group membership configuration is provided for */
+  identity?: Identity | null;
+  /** The state of the membership (e.g., ACTIVE) */
+  status?: MembershipState | null;
+  /** The enrollment criteria actor (e.g., BY_MEMBER_WITH_CONSENT) */
+  enrollment?: MembershipEnrollment | null;
+  /** Email notification preference for group notifications */
+  emailNotification?: NotificationState | null;
+  /** SMS notification preference for group notifications */
+  smsNotification?: NotificationState | null;
+  /** In-app notification preference for group notifications */
+  inAppNotification?: NotificationState | null;
+}
+
+export type ThreadPurpose =
+| 'GENERAL'
+| 'CHANGELOG'
+| 'BAACK_CUSTOMER_SUPPORT'
+| 'SUPPORT'
+| 'PROJECT_DISCUSSION'
+| 'TASK_DISCUSSION'
+| 'COMPANY_DISCUSSION'
+| 'PAYMENT_INVOICE_DISCUSSION'
+| 'ENTITY_DISCUSSION'
+;
+
+export interface MessageThread {
+  urn?: string;
+  url?: string;
+  name: string;
+  purpose: ThreadPurpose;
+  group: Group;
+  companies?: Company[];
+  tasks?: Task[];
+  projects?: Project[];
+  entities?: Entity[];
+  pagination?: Pagination;
+  posts: ThreadPost[];
+}
+
+export interface ThreadPost {
+  urn?: string;
+  url?: string;
+  messageThread?: MessageThread;
+  authorIdentity: Identity;
+  content: string;
+  replyTo: ThreadPost;
+  createdTimestamp?: string | null;
+}
+
+export interface IdentityNotificationInbox {
+  pagination?: Pagination;
+  notifications: ThreadNotification[];
+}
+
+export interface ThreadNotification {
+  urn?: string;
+  url?: string;
+  messageThread: MessageThread;
+  identity?: Identity;
+  notificationCount: number;
+  updatedTimestamp: string;
+}
+
+
+
+// ==========================================
+// ENTITY LIST MODULE
+// ==========================================
+
+/**
+ * An entity list for a collection of entity references.
+ * Note: The returned list respects the natural ordering of the sort order field.
+ */
+export interface EntityList {
+  /** The URN for this entity list */
+  urn: string;
+  /** The URL for the entity list */
+  url?: string | null;
+  /** The company owner of this entity list */
+  owner?: Company | null;
+  /** The name associated with this list of entities */
+  name: string;
+  /** The collection of entity list items, including their sort order */
+  entities: EntityListItem[];
+}
+
+/**
+ * A reference to an entity within a list, including its sorting position.
+ */
+export interface EntityListItem {
+  /** The URN of the entity item */
+  urn: string;
+  /** Reference to the underlying Entity */
+  entity: Entity;
+  /** The sort order for the entity in the listing */
+  sortOrder?: number | null;
+}
 

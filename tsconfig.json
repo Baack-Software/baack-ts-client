@@ -6,6 +6,10 @@
     "outDir": "./dist",
 
     "module": "nodenext",
+    "moduleResolution": "NodeNext",
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
     "target": "esnext",
     "types": ["node"],
     "lib": ["esnext"],

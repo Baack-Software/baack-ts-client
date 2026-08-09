@@ -19,6 +19,7 @@ export const Endpoint = Object.freeze({
     GROUP: '/n/v1/group/',
     GROUP_MEMBERSHIP: '/n/v1/groupmembership/',
     IDENTITY: '/n/v1/identity/',
+    IDENTITY_NOTIFICATION_INBOX: '/n/v1/identitynotificationinbox/',
     IMAGE: '/n/v1/imageitem/',
     IMAGE_HISTORY: '/n/v1/imageitemhistory/',
     IMAGE_FILE: '/n/v1/imagefile',
@@ -31,6 +32,7 @@ export const Endpoint = Object.freeze({
     MARKDOWN:  '/n/v1/markdownitem/',
     MARKDOWN_HISTORY: '/n/v1/markdownitemhistory/',
     MESSAGE_THREAD: '/n/v1/messagethread/',
+    MESSAGE_THREAD_NOTIFICATION: '/n/v1/messagethreadnotificaiton/',
     MONEY: '/n/v1/moneyitem/',
     MONEY_HISTORY: '/n/v1/moneyitemhistory/',
     OAUTH_TOKEN: '/n/v1/oauthtoken/',
@@ -52,5 +54,5 @@ export const Endpoint = Object.freeze({
     WORKFLOW: '/n/v1/workflow/'
 });
 
-export type ApiMode = 'native' | 'view';
+
 

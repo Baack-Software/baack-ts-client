@@ -1,10 +1,37 @@
 {
-  "name": "baack-client",
+  "name": "@baack-software/baack-ts-client",
   "version": "0.0.1",
-  "type": "module",
   "description": "Official TypeScript client for Baack.co Headless CMS",
+  "keywords": [
+    "CMS",
+    "headless",
+    "content",
+    "management",
+    "DXP",
+    "headless",
+    "digital",
+    "experience",
+    "platform",
+    "Project",
+    "and",
+    "tasks",
+    "Communities",
+    "and",
+    "chat",
+    "threads"
+  ],
+  "homepage": "https://github.com/Baack-Software/baack-ts-client#readme",
+  "bugs": {
+    "url": "https://github.com/Baack-Software/baack-ts-client/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Baack-Software/baack-ts-client.git"
+  },
+  "license": "Apache-2.0",
+  "author": "baack-dakkad",
+  "type": "module",
   "main": "dist/index.js",
-  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "files": [
     "dist"
@@ -15,6 +42,6 @@
   "devDependencies": {
     "@types/node": "^20.0.0",
     "typescript": "^5.0.0"
-  }
+  },
+  "module": "dist/index.mjs"
 }
-

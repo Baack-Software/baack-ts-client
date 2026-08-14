@@ -46,7 +46,7 @@ export class BaackClient {
   /**
    * CREATE / POST method for creating resources
    */
-  public async create<T>(endpoint: Endpoint, body?: unknown): Promise<T> {
+  public async create<T>(endpoint: string, body?: unknown): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: body ? JSON.stringify(body) : '',
@@ -56,7 +56,7 @@ export class BaackClient {
   /**
    * READ / GET method for all endpoints
    */
-  public async read<T>(endpoint: Endpoint, urn: string, params?: Record<string, any>): Promise<T> {
+  public async read<T>(endpoint: string, urn: string, params?: Record<string, any>): Promise<T> {
     const url = new URL(this.baseUrl + endpoint + urn);
     if (params) {
       Object.entries(params).forEach(([k, v]) => url.searchParams.append(k, v));
@@ -67,7 +67,7 @@ export class BaackClient {
   /**
    * UPDATE / PUT for updating representations
    */
-   public async update<T>(endpoint: Endpoint, urn: string, body?: unknown): Promise<T> {
+   public async update<T>(endpoint: string, urn: string, body?: unknown): Promise<T> {
      const url = new URL(this.baseUrl + endpoint + urn);
      return this.request<T>(url.toString(), {
        method: 'PUT',
@@ -78,7 +78,7 @@ export class BaackClient {
   /**
    * DELETE for deleting representations
    */
-  public async delete<T>(endpoint: Endpoint, urn: string): Promise<T> {
+  public async delete<T>(endpoint: string, urn: string): Promise<T> {
     const url = new URL(this.baseUrl + endpoint + urn);
     return this.request<T>(url.toString(), {
       method: 'DELETE',

@@ -1,6 +1,7 @@
 {
   "name": "@baack-software/baack-ts-client",
   "version": "0.0.1",
+  "access": "public",
   "description": "Official TypeScript client for Baack.co Headless CMS",
   "keywords": [
     "CMS",

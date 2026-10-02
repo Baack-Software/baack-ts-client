@@ -223,6 +223,8 @@ export interface Entity {
   longs?: LongItem[];
   money?: MoneyItem[];
   jsons?: JsonItem[];
+  links?: LinkItem[];
+  references?: ReferenceItem[];
 }
 
 export interface TextItem { 
@@ -349,6 +351,33 @@ export interface MarkdownItem {
   history?: MarkdownItemHistory | null;
 }
 
+export interface LinkItem {
+  urn?: string;
+  url?: string;
+  name: string;
+  sortOrder: number;
+  href: string;
+  rel?: string;
+  text?: string;
+  lang?: string;
+  entity?: Entity | null;
+  isPublished?: boolean | null;
+  createdTimestamp?: string | null;
+  history?: LinkItemHistory | null;
+}
+
+export interface ReferenceItem {
+  urn?: string;
+  url?: string;
+  name: string;
+  sortOrder: number;
+  entityReference: Entity;
+  entity?: Entity | null;
+  isPublished?: boolean | null;
+  createdTimestamp?: string | null;
+  history?: ReferenceItemHistory | null;
+}
+
 export interface MoneyItem {
   urn?: string;
   url?: string;
@@ -436,6 +465,20 @@ export interface MoneyItemHistory {
   item?: MoneyItem | null;
   pagination?: Pagination | null;
   history: MoneyItem[];
+  url: string;
+}
+
+export interface LinkItemHistory {
+  item?: LinkItem | null;
+  pagination?: Pagination | null;
+  history: LinkItem[];
+  url: string;
+}
+
+export interface ReferenceItemHistory {
+  item?: ReferenceItem | null;
+  pagination?: Pagination | null;
+  history: ReferenceItem[];
   url: string;
 }
 

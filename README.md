@@ -17,20 +17,38 @@ The Baack client provides a baseline for managing content and experience related
 of the client connecting to the platform.
 
 ```typescript
+import { BaackClient, Endpoint, EntityView, type Entity } from '@baack-software/baack-ts-client';
 
-  // Initialise a config 
-  let config = new BaackConfig('https://api.baack.co', 
-      process.env['BAACK_API_CLIENT_TOKEN']);
-  let client = new BaackClient(config);
-  
-  // Fetch a entity view for a page style context
-  let content = client.read<Entity>(Endpoint.ENTITY_VIEW, '/home');
-  
+// Configure the client with your API client's bearer token. Keep the token server-side, or use a read-only
+// API client for code that runs in the browser.
+const client = new BaackClient({
+  baseUrl: 'https://api.baack.co',
+  headers: { Authorization: `Bearer ${process.env['BAACK_API_CLIENT_TOKEN']}` },
+});
+
+// Read a page's content by path, language and variant ('' is the default variant).
+const entity = await client.read<Entity>(Endpoint.ENTITY_VIEW, '/home', {
+  language: 'en-GB',
+  variant: '',
+});
+
+// EntityView gives name-based access to the entity's content items.
+const view = EntityView.from(entity);
+const title = view.text('title')?.value;
+const body = view.markdown('body')?.value; // rendered HTML
 ```
 
-We are currently working on helpers to make consuming content in common frameworks
-like Astro / Next / React easier as the raw content representation requires some 
-navigation. Please feel free to request specific approaches via the issues.
+The entity view endpoint takes a path (for example `/home`) or an entity URN. Most of the time you'll use the
+combination of path, `language` and `variant`. The API respects the `language` parameter, or the reader's
+`Accept-Language` preferences, so it can return a different language version from the one you addressed: request an
+en-US entity's URN from a browser that prefers pt-BR and, if a pt-BR version exists, you'll get that entity, with its
+own URN. Check `entity.language` and `entity.urn` to see which version came back. Pass `version: 'LATEST'` to read the
+latest version, including unpublished drafts, for previews.
+
+`EntityView` hides the raw content representation's navigation: `view.text(name)`, `view.markdown(name)`,
+`view.image(name)` and the other accessors return the item at sort order 0, or pass a sort order to reach a
+repeated field (`view.text('caption', 2)`, or `view.texts('caption')` for all of them). We're working on more helpers
+for frameworks like Astro, Next and React; please request specific approaches via the issues.
 
 ## Feedback 
 We welcome feedback, please create feature requests and issues in GitHub to allow them to be easily tracked.

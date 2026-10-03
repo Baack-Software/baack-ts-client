@@ -1,3 +1,5 @@
+import type { ApiError } from './types/index.ts';
+
 /**
  * Thrown for any non-2xx response from the Baack API. Carries the HTTP status
  * so callers can tell an expired session (401) from a missing permission (403),
@@ -38,6 +40,18 @@ export class BaackApiError extends Error {
 
   get isServerError(): boolean {
     return this.status >= 500;
+  }
+
+  /** The API error object from the body, when there is one. */
+  get apiError(): ApiError | undefined {
+    const parsed = this.json<ApiError>();
+    return parsed !== null && typeof parsed === 'object' ? parsed : undefined;
+  }
+
+  /** The API's description of the problem, when it gave one. */
+  get detail(): string | undefined {
+    const detail = this.apiError?.detail;
+    return typeof detail === 'string' && detail !== '' ? detail : undefined;
   }
 
   /** The body parsed as JSON, or undefined when it is empty or not JSON. */

@@ -6,6 +6,27 @@
 // SYSTEM & INFRASTRUCTURE
 // ==========================================
 
+/**
+ * General API error object, returned with a failed request.
+ */
+export type ApiCode =
+  | 'INVALID_REPRESENTATION'
+  | 'REPRESENTATION_MISSING_REQUIRED_FIELD'
+  | 'READ_SUCCESS'
+  | 'UPDATE_SUCCESS'
+  | 'DELETE_SUCCESS'
+  | 'NOT_FOUND'
+  | 'CREATE_SUCCESS'
+  | 'BAD_REQUEST'
+  | 'QUOTA_EXCEEDED';
+
+export interface ApiError {
+  apiCode?: ApiCode;
+  /** A human-readable description of the problem. */
+  detail?: string;
+  httpCode?: number;
+}
+
 export interface Pagination {
   /** Offset hint used in paginated queries */
   after?: string | null;

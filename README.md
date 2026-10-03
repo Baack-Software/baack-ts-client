@@ -52,8 +52,10 @@ for frameworks like Astro, Next and React; please request specific approaches vi
 
 ### Errors
 
-Any non-2xx response throws a `BaackApiError` carrying the HTTP `status`, the raw response `body`, and the request
-`method` and `url`, so you can react to the cause rather than parse a message:
+Any non-2xx response throws a `BaackApiError` carrying the HTTP `status`, the raw response `body`, the API error object
+(`apiError`, with `apiCode`, `detail` and `httpCode`; `detail` is also available directly), and the request `method` and
+`url`, so you can react to the cause rather than parse a message. Note that the API answers `404` when a request lacks
+the session or permission it needs:
 
 ```typescript
 import { isBaackApiError } from '@baack-software/baack-ts-client';

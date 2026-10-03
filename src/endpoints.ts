@@ -44,6 +44,8 @@ export const Endpoint = Object.freeze({
     PERSON_NAME: '/n/v1/personname/',
     SEARCH : '/n/v1/search/',
     REFERENCE: '/n/v1/referenceitem/',
+    /** Not yet released; follows the pattern of the other item history endpoints. */
+    REFERENCE_HISTORY: '/n/v1/referenceitemhistory/',
     TASK: '/n/v1/task/',
     TASK_LOG: '/n/v1/tasklog/',
     TASK_LOGS: '/n/v1/tasklogs/',

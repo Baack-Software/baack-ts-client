@@ -26,7 +26,7 @@ export const Endpoint = Object.freeze({
     JSON: '/n/v1/jsonitem/',
     JSON_HISTORY: '/n/v1/jsonitemhistory/',
     LAT_LONG: '/n/v1/latlongitem/',
-    LAT_LONG_HISTORY: '/n/v1/latlonghistory/',
+    LAT_LONG_HISTORY: '/n/v1/latlongitemhistory/',
     LONG: '/n/v1/longitem/',
     LONG_HISTORY: '/n/v1/longitemhistory/',
     MARKDOWN:  '/n/v1/markdownitem/',

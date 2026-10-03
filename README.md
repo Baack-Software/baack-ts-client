@@ -50,6 +50,38 @@ latest version, including unpublished drafts, for previews.
 repeated field (`view.text('caption', 2)`, or `view.texts('caption')` for all of them). We're working on more helpers
 for frameworks like Astro, Next and React; please request specific approaches via the issues.
 
+### Errors
+
+Any non-2xx response throws a `BaackApiError` carrying the HTTP `status`, the raw response `body`, and the request
+`method` and `url`, so you can react to the cause rather than parse a message:
+
+```typescript
+import { isBaackApiError } from '@baack-software/baack-ts-client';
+
+try {
+  await client.update(Endpoint.TEXT, item.urn, item);
+} catch (error) {
+  if (isBaackApiError(error) && error.isUnauthorized) {
+    // session expired: prompt to log in, keep the user's changes
+  } else {
+    throw error;
+  }
+}
+```
+
+A network failure (no response at all) rejects with fetch's own error. An empty response body, such as a `204` from a
+delete, resolves to `undefined`.
+
+### Browser use with a Baack session
+
+A browser client on another origin that relies on the user's Baack session needs `credentials: 'include'`:
+
+```typescript
+const client = new BaackClient({ baseUrl: 'https://api.baack.co', credentials: 'include' });
+```
+
+`client.upload(endpoint, formData)` posts a multipart form, for example an image file.
+
 ## Feedback 
 We welcome feedback, please create feature requests and issues in GitHub to allow them to be easily tracked.
 

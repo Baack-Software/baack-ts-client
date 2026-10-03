@@ -307,6 +307,7 @@ export interface JsonItem {
   url?: string;
   name: string;
   sortOrder: number;
+  /** Any JSON object, sent and returned as structured JSON, not as a string. */
   value: unknown;
   entity?: Entity | null;
   isPublished?: boolean | null;

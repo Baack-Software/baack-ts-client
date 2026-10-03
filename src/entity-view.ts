@@ -37,7 +37,9 @@ import type {
   DateTimeItem,
   ImageItem,
   LatLongItem,
-  JsonItem
+  JsonItem,
+  LinkItem,
+  ReferenceItem
 } from './types/index.ts';
 import { BaackClient } from './client.ts';
 import { Endpoint } from './endpoints.ts';
@@ -126,9 +128,12 @@ export class EntityView {
    * Useful for conditionally rendering optional sections.
    */
   has(name: string): boolean {
-    const { texts, markdowns, templates, booleans, doubles, longs, money, dateTimes, images, latLongs, jsons } =
-      this.entity;
-    return [texts, markdowns, templates, booleans, doubles, longs, money, dateTimes, images, latLongs, jsons].some(
+    const {
+      texts, markdowns, templates, booleans, doubles, longs, money, dateTimes, images, latLongs, jsons, links, references,
+    } = this.entity;
+    return [
+      texts, markdowns, templates, booleans, doubles, longs, money, dateTimes, images, latLongs, jsons, links, references,
+    ].some(
       (collection) => (collection as NamedItem[] | undefined)?.some((item) => item.name === name),
     );
   }
@@ -188,6 +193,14 @@ export class EntityView {
 
   hasJson(name: string, sortOrder = 0): boolean {
     return this.hasByNameAndSortOrder(this.entity.jsons, name, sortOrder);
+  }
+
+  hasLink(name: string, sortOrder = 0): boolean {
+    return this.hasByNameAndSortOrder(this.entity.links, name, sortOrder);
+  }
+
+  hasReference(name: string, sortOrder = 0): boolean {
+    return this.hasByNameAndSortOrder(this.entity.references, name, sortOrder);
   }
 
   // ---------------------------------------------------------------------
@@ -330,6 +343,30 @@ export class EntityView {
 
   jsons(name: string): JsonItem[] {
     return this.allByName<JsonItem>(this.entity.jsons, name);
+  }
+
+  // ---------------------------------------------------------------------
+  // Links
+  // ---------------------------------------------------------------------
+
+  link(name: string, sortOrder = 0): LinkItem | undefined {
+    return this.byNameAndSortOrder<LinkItem>(this.entity.links, name, sortOrder);
+  }
+
+  links(name: string): LinkItem[] {
+    return this.allByName<LinkItem>(this.entity.links, name);
+  }
+
+  // ---------------------------------------------------------------------
+  // References to other entities
+  // ---------------------------------------------------------------------
+
+  reference(name: string, sortOrder = 0): ReferenceItem | undefined {
+    return this.byNameAndSortOrder<ReferenceItem>(this.entity.references, name, sortOrder);
+  }
+
+  references(name: string): ReferenceItem[] {
+    return this.allByName<ReferenceItem>(this.entity.references, name);
   }
 
   // ---------------------------------------------------------------------

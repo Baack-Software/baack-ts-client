@@ -82,10 +82,12 @@ export class BaackClient {
   }
 
   /**
-   * READ / GET method for all endpoints
+   * READ / GET method for all endpoints. `headers` are added to this request
+   * only: a server reading the entity view for a visitor can forward their
+   * `Accept-Language`, so the view picks the best available language.
    */
-  public async read<T>(endpoint: string, urn: string, params?: QueryParams): Promise<T> {
-    return this.request<T>(endpoint + urn, { method: 'GET' }, params);
+  public async read<T>(endpoint: string, urn: string, params?: QueryParams, headers?: Record<string, string>): Promise<T> {
+    return this.request<T>(endpoint + urn, { method: 'GET', ...(headers ? { headers } : {}) }, params);
   }
 
   /**

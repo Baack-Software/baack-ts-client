@@ -42,8 +42,27 @@ The entity view endpoint takes a path (for example `/home`) or an entity URN. Mo
 combination of path, `language` and `variant`. The API respects the `language` parameter, or the reader's
 `Accept-Language` preferences, so it can return a different language version from the one you addressed: request an
 en-US entity's URN from a browser that prefers pt-BR and, if a pt-BR version exists, you'll get that entity, with its
-own URN. Check `entity.language` and `entity.urn` to see which version came back. Pass `version: 'LATEST'` to read the
-latest version, including unpublished drafts, for previews.
+own URN. When you send both, `language` comes first and the `Accept-Language` preferences are the fallbacks. Check
+`entity.language` and `entity.urn` to see which version came back. Pass `version: 'LATEST'` to read the latest version,
+including unpublished drafts, for previews.
+
+A URN or path is a locator, not a promise of that exact entity: even `GET /v/v1/entityview/<urn-of-an-en-GB-entity>`
+can return a de-DE entity with its own URN. Always key on the returned `urn`. A browser sends its own
+`Accept-Language`; a server or proxy reading with a read-only token on a visitor's behalf can forward theirs:
+
+```typescript
+const entity = await client.read<Entity>(Endpoint.ENTITY_VIEW, '/home', { variant: '' }, {
+  'Accept-Language': request.headers.get('Accept-Language') ?? 'en-GB',
+});
+```
+
+The view also returns `alternativeLanguages`: the other language versions of the returned entity, in the same variant,
+for `<link rel="alternate" hreflang>`. Map each to a URL however your site routes languages.
+
+Responses are shallow: a linked object is the same type with only its `urn` (and `url`) set, never expanded. An
+entity list (`Endpoint.ENTITY_LIST`) returns each `entity` that way, so read each entity's view to render it; a text
+item read from its own endpoint has a parent `entity` reference, and inside an entity's `texts` it has none. The API
+is permissive in the other direction: send full objects where a link is expected and it stores only their URNs.
 
 `EntityView` hides the raw content representation's navigation: `view.text(name)`, `view.markdown(name)`,
 `view.image(name)` and the other accessors return the item at sort order 0, or pass a sort order to reach a

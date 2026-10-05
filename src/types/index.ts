@@ -246,6 +246,12 @@ export interface Entity {
   jsons?: JsonItem[];
   links?: LinkItem[];
   references?: ReferenceItem[];
+  /**
+   * Entity view only: the other language versions of the returned entity, in
+   * the same variant, as shallow links. Absent when there are none, and
+   * ignored on update. For `<link rel="alternate" hreflang>`.
+   */
+  alternativeLanguages?: Entity[];
 }
 
 export interface TextItem { 
@@ -889,7 +895,11 @@ export interface EntityList {
 export interface EntityListItem {
   /** The URN of the entity item */
   urn: string;
-  /** Reference to the underlying Entity */
+  /**
+   * The listed entity. Links are shallow: the list returns it with only `urn`
+   * (and `url`) set and does not render it; read its view to hydrate it. A
+   * full Entity can be sent here, and only its URN is stored.
+   */
   entity: Entity;
   /** The sort order for the entity in the listing */
   sortOrder?: number | null;

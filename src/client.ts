@@ -12,6 +12,19 @@ export interface BaackConfig {
   credentials?: 'omit' | 'same-origin' | 'include';
 }
 
+/**
+ * The HTTP method behind each of the API's operations, named as the API docs
+ * and this client's methods name them: `Method.UPDATE` is `PUT`. Use these
+ * rather than HTTP method strings, for example in tests or a proxy allowlist.
+ */
+export const Method = {
+  CREATE: 'POST',
+  READ: 'GET',
+  UPDATE: 'PUT',
+  DELETE: 'DELETE',
+} as const;
+export type Method = (typeof Method)[keyof typeof Method];
+
 type QueryParams = Record<string, string | number | boolean | null | undefined>;
 
 export class BaackClient {
@@ -63,12 +76,13 @@ export class BaackClient {
       init.credentials = this.credentials;
     }
 
-    const method = options.method ?? 'GET';
+    const method = options.method ?? Method.READ;
     const response = await fetch(url.toString(), init);
     const text = await response.text();
 
     if (!response.ok) {
-      throw new BaackApiError(response.status, response.statusText, text, method, url.toString());
+      const sent = typeof init.body === 'string' ? init.body : undefined;
+      throw new BaackApiError(response.status, response.statusText, text, method, url.toString(), sent);
     }
 
     return (text ? JSON.parse(text) : undefined) as T;
@@ -78,7 +92,7 @@ export class BaackClient {
    * CREATE / POST method for creating resources
    */
   public async create<T>(endpoint: string, body?: unknown): Promise<T> {
-    return this.request<T>(endpoint, jsonInit('POST', body));
+    return this.request<T>(endpoint, jsonInit(Method.CREATE, body));
   }
 
   /**
@@ -87,14 +101,14 @@ export class BaackClient {
    * `Accept-Language`, so the view picks the best available language.
    */
   public async read<T>(endpoint: string, urn: string, params?: QueryParams, headers?: Record<string, string>): Promise<T> {
-    return this.request<T>(endpoint + urn, { method: 'GET', ...(headers ? { headers } : {}) }, params);
+    return this.request<T>(endpoint + urn, { method: Method.READ, ...(headers ? { headers } : {}) }, params);
   }
 
   /**
    * UPDATE / PUT for updating representations
    */
   public async update<T>(endpoint: string, urn: string, body?: unknown): Promise<T> {
-    return this.request<T>(endpoint + urn, jsonInit('PUT', body));
+    return this.request<T>(endpoint + urn, jsonInit(Method.UPDATE, body));
   }
 
   /**
@@ -102,7 +116,7 @@ export class BaackClient {
    */
   public async delete<T = undefined>(endpoint: string, urn: string): Promise<T> {
     return this.request<T>(endpoint + urn, {
-      method: 'DELETE',
+      method: Method.DELETE,
     });
   }
 
@@ -111,7 +125,7 @@ export class BaackClient {
    * the multipart Content-Type and boundary itself.
    */
   public async upload<T>(endpoint: string, form: FormData): Promise<T> {
-    return this.request<T>(endpoint, { method: 'POST', body: form });
+    return this.request<T>(endpoint, { method: Method.CREATE, body: form });
   }
 
   /**
@@ -122,6 +136,6 @@ export class BaackClient {
   }
 }
 
-function jsonInit(method: string, body: unknown): RequestInit {
+function jsonInit(method: Method, body: unknown): RequestInit {
   return body === undefined ? { method } : { method, body: JSON.stringify(body) };
 }

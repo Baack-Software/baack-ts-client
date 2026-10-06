@@ -18,6 +18,8 @@ export class BaackApiError extends Error {
     readonly body: string,
     readonly method: string,
     readonly url: string,
+    /** The JSON body that was sent, when there was one, for debugging (not multipart uploads). */
+    readonly requestBody?: string,
   ) {
     super(`Baack API Error [${status}]: ${body || statusText}`);
   }

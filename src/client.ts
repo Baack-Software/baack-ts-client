@@ -1,5 +1,6 @@
 import { Endpoint } from './endpoints.ts';
 import { BaackApiError } from './errors.ts';
+import type { Search } from './types/index.ts';
 
 export interface BaackConfig {
   baseUrl: string;
@@ -129,10 +130,17 @@ export class BaackClient {
   }
 
   /**
-   * Specialized Search method supporting partial results and includeScopes
+   * Starts a search (`owner`, `includeScopes`, optional `order`). The result
+   * may be partial (`status` before `FULL_RESULT`): read it again with
+   * `searchResult` until it is full, and follow its `pagination`.
    */
-  public async search<Search>(params: Search): Promise<Search> {
+  public async search(params: Search): Promise<Search> {
     return this.create<Search>(Endpoint.SEARCH, params);
+  }
+
+  /** Reads a search's results again by its URN, optionally from a page (`after`). */
+  public async searchResult(urn: string, after?: string): Promise<Search> {
+    return this.read<Search>(Endpoint.SEARCH, urn, { after });
   }
 }
 

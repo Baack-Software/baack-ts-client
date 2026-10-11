@@ -32,3 +32,21 @@ const { title: [title], body: [body] } = tr(await res.json())
 
 www.baack.co's home hero shows it as "(planned)" in its fetch example (`src/components/islands/HeroContentDemo.tsx`);
 drop that once it ships.
+
+## Make write and `ALL` permission tokens clearly server-side only
+
+The README says to keep tokens server-side or use a read-only API client in the browser, but nothing in the client
+enforces or reinforces it. A token whose role can write, or has `ALL` permissions, belongs only in server-side
+configuration (`.env`, a build or deploy secret), never in code that ships to a browser.
+
+- Document the split up front: read-only API clients for browser and runtime reads; write and `ALL` tokens only in
+  server-side env for builds, content sync and admin scripts. Name the env variables to match, e.g.
+  `BAACK_API_CLIENT_TOKEN` (read) and `BAACK_WRITE_TOKEN` (write).
+- Warn when the client runs in a browser (`typeof window !== 'undefined'`) with a token the API reports as able to
+  write, or when a write method is called there. Needs a way to learn a token's permissions, e.g. an introspection
+  endpoint, or the API's 403 answers.
+- Consider separate entry points or types for reading and writing, so browser bundles can't reach write methods by
+  accident.
+
+www-baack-co-cas currently builds with a write token on purpose while its placeholders are pushed into the CMS, and
+plans to downgrade its builds to read-only afterwards (see its TODO.md).

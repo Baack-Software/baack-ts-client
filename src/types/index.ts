@@ -577,7 +577,7 @@ export type TaskActivity =
   | 'STATUS_PENDING'
   | 'STATUS_IN_PROGRESS'
   | 'STATUS_BLOCKED'
-  | 'STATUS_COMPL_ETED' // Note: Using provided spelling if exact, but corrected to COMPLETED below
+  | 'STATUS_COMPLETED'
   | 'STATUS_CLOSED'
   | 'PRIORITY_LOW'
   | 'PRIORITY_MEDIUM'

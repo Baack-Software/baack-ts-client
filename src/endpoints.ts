@@ -34,7 +34,7 @@ export const Endpoint = Object.freeze({
     MARKDOWN:  '/n/v1/markdownitem/',
     MARKDOWN_HISTORY: '/n/v1/markdownitemhistory/',
     MESSAGE_THREAD: '/n/v1/messagethread/',
-    MESSAGE_THREAD_NOTIFICATION: '/n/v1/messagethreadnotificaiton/',
+    MESSAGE_THREAD_NOTIFICATION: '/n/v1/messagethreadnotification/',
     MONEY: '/n/v1/moneyitem/',
     MONEY_HISTORY: '/n/v1/moneyitemhistory/',
     OAUTH_TOKEN: '/n/v1/oauthtoken/',

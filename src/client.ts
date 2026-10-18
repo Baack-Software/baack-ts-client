@@ -102,21 +102,21 @@ export class BaackClient {
    * `Accept-Language`, so the view picks the best available language.
    */
   public async read<T>(endpoint: string, urn: string, params?: QueryParams, headers?: Record<string, string>): Promise<T> {
-    return this.request<T>(endpoint + urn, { method: Method.READ, ...(headers ? { headers } : {}) }, params);
+    return this.request<T>(join(endpoint, urn), { method: Method.READ, ...(headers ? { headers } : {}) }, params);
   }
 
   /**
    * UPDATE / PUT for updating representations
    */
   public async update<T>(endpoint: string, urn: string, body?: unknown): Promise<T> {
-    return this.request<T>(endpoint + urn, jsonInit(Method.UPDATE, body));
+    return this.request<T>(join(endpoint, urn), jsonInit(Method.UPDATE, body));
   }
 
   /**
    * DELETE for deleting representations
    */
   public async delete<T = undefined>(endpoint: string, urn: string): Promise<T> {
-    return this.request<T>(endpoint + urn, {
+    return this.request<T>(join(endpoint, urn), {
       method: Method.DELETE,
     });
   }
@@ -142,6 +142,15 @@ export class BaackClient {
   public async searchResult(urn: string, after?: string): Promise<Search> {
     return this.read<Search>(Endpoint.SEARCH, urn, { after });
   }
+}
+
+/**
+ * Appends a URN or path to an endpoint. Endpoints end with a slash and paths
+ * such as '/home' start with one, so drop the duplicate: the API accepts
+ * either, but one slash is the canonical URL.
+ */
+function join(endpoint: string, urn: string): string {
+  return endpoint.endsWith('/') && urn.startsWith('/') ? endpoint + urn.slice(1) : endpoint + urn;
 }
 
 function jsonInit(method: Method, body: unknown): RequestInit {

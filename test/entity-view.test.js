@@ -60,7 +60,7 @@ test('fetch passes params and headers to the entity view read', async () => {
     const fetched = await EntityView.fetch(client, '/home', { variant: '' }, { 'Accept-Language': 'pt-BR' });
 
     assert.equal(fetched.text('title')?.value, 'Olá');
-    assert.equal(call.url, 'https://api.example.test/v/v1/entityview//home?variant=');
+    assert.equal(call.url, 'https://api.example.test/v/v1/entityview/home?variant=');
     assert.equal(call.init.headers['Accept-Language'], 'pt-BR');
   } finally {
     globalThis.fetch = realFetch;

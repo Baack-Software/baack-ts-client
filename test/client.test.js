@@ -27,7 +27,7 @@ test('read builds the URL, drops empty params and sends no Content-Type', async 
   const entity = await client.read(Endpoint.ENTITY_VIEW, '/home', { language: 'en-GB', variant: '', missing: undefined });
 
   assert.deepEqual(entity, { urn: 'urn:e' });
-  assert.equal(calls[0].url, 'https://api.example.test/v/v1/entityview//home?language=en-GB&variant=');
+  assert.equal(calls[0].url, 'https://api.example.test/v/v1/entityview/home?language=en-GB&variant=');
   assert.equal(calls[0].init.method, 'GET');
   assert.equal(calls[0].init.headers.Authorization, 'Bearer t');
   assert.equal(calls[0].init.headers['Content-Type'], undefined);
@@ -45,6 +45,7 @@ test('update sends a JSON body', async () => {
   respond(200, '{"name":"title"}');
   await client.update(Endpoint.TEXT, 'urn:t', { name: 'title' });
 
+  assert.equal(calls[0].url, 'https://api.example.test/n/v1/textitem/urn:t');
   assert.equal(calls[0].init.method, 'PUT');
   assert.equal(calls[0].init.body, '{"name":"title"}');
   assert.equal(calls[0].init.headers['Content-Type'], 'application/json');

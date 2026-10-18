@@ -43,6 +43,7 @@ export const Endpoint = Object.freeze({
     PERSON: '/n/v1/person/',
     PERSON_NAME: '/n/v1/personname/',
     SEARCH : '/n/v1/search/',
+    STAT_USAGE: '/n/v1/stat/usage/',
     REFERENCE: '/n/v1/referenceitem/',
     /**
      * Not yet released by the API; follows the pattern of the other item

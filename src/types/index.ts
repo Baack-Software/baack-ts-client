@@ -146,6 +146,13 @@ export interface Company {
   entity?: Entity | null;
 }
 
+/** A page of the companies the caller can manage, from `Endpoint.COMPANIES`. */
+export interface CompanyPage {
+  companies?: Company[];
+  /** The next page's URL, when there are more companies. */
+  nextPageUrl?: string | null;
+}
+
 // ==========================================
 // IDENTITY & PERSONS
 // ==========================================
@@ -681,25 +688,35 @@ export type SearchState =
 export type SearchOrder = 'UNDEFINED' | 'NAME';
 
 export type IncludeScope = 
+  | 'API_CLIENT'
   | 'ENTITY' 
   | 'ENTITY_LIST' 
   | 'GROUP' 
   | 'GROUP_MEMBERSHIP' 
   | 'IDENTITY' 
+  | 'PERMISSION'
   | 'PROJECT' 
-  | 'TASK';
+  | 'TASK'
+  | 'WEBHOOK_SUBSCRIPTION'
+  | 'WEBHOOK_TRIGGER'
+  | 'WORKFLOW';
 
 /**
  * The specific type of content returned in a search result item.
  */
 export type SearchItemType = 
+  | 'API_CLIENT'
   | 'ENTITY' 
   | 'ENTITY_LIST' 
   | 'GROUP' 
   | 'GROUP_MEMBERSHIP' 
   | 'IDENTITY' 
+  | 'PERMISSION'
   | 'PROJECT' 
-  | 'TASK';
+  | 'TASK'
+  | 'WEBHOOK_SUBSCRIPTION'
+  | 'WEBHOOK_TRIGGER'
+  | 'WORKFLOW';
 
 
 /**
@@ -905,3 +922,171 @@ export interface EntityListItem {
   sortOrder?: number | null;
 }
 
+
+// ==========================================
+// PERMISSIONS
+// ==========================================
+
+/** The kinds of subject and object a permission grant can name. */
+export type PermissionScope =
+  | 'ANY'
+  | 'ACCOUNT'
+  | 'API_CLIENT'
+  | 'COMPANY'
+  | 'EMAIL_ADDRESS'
+  | 'ENTITY'
+  | 'ENTITY_LIST'
+  | 'GROUP'
+  | 'GROUP_MEMBERSHIP'
+  | 'IDENTITY'
+  | 'ORGANISATION'
+  | 'PAYMENT_CARD'
+  | 'PERSON'
+  | 'PROJECT'
+  | 'ROLE'
+  | 'TASK'
+  | 'USER'
+  | 'OAUTH_TOKEN';
+
+/** What a permission grant allows. */
+export type PermissionLabel =
+  | 'ALL'
+  | 'CREATE'
+  | 'READ'
+  | 'UPDATE'
+  | 'DELETE'
+  | 'ADMINISTER'
+  | 'MODERATE'
+  | 'ARCHIVE';
+
+/**
+ * A permission grant: a subject (e.g. an identity or API client) may do
+ * `label` to an object (e.g. a company or entity), between optional dates.
+ */
+export interface Permission {
+  urn: string;
+  url?: string;
+  /** The company that owns this grant */
+  owner?: Company | null;
+  subjectUrn: string;
+  subjectScope?: PermissionScope | null;
+  label?: PermissionLabel | null;
+  objectUrn: string;
+  objectScope?: PermissionScope | null;
+  /** When the grant starts (ISO 8601) */
+  fromTimestamp?: string | null;
+  /** When the grant ends (ISO 8601), if it does */
+  toTimestamp?: string | null;
+}
+
+
+// ==========================================
+// WEBHOOKS
+// ==========================================
+
+/** How a webhook delivery authenticates to its destination. */
+export type WebhookAuth = 'BASIC' | 'DIGEST' | 'BEARER' | 'HMAC_SHA256';
+
+/** The changes a webhook subscription is triggered by. */
+export type WebhookEvent = 'ALL' | 'CREATE' | 'UPDATE' | 'DELETE';
+
+/** The kind of object a webhook watches. */
+export type WebhookSubject =
+  | 'UNKNOWN'
+  | 'ADDRESS'
+  | 'API_CLIENT'
+  | 'BEARER_TOKEN'
+  | 'BOOLEAN_ITEM'
+  | 'CLIENT_IDENTIFIER'
+  | 'COMPANY'
+  | 'DATETIME_ITEM'
+  | 'DOUBLE_ITEM'
+  | 'EMAIL'
+  | 'ENTITY'
+  | 'ENTITY_LIST'
+  | 'GROUP'
+  | 'GROUP_MEMBERSHIP'
+  | 'IDENTITY'
+  | 'JSON_ITEM'
+  | 'LINK_ITEM'
+  | 'REFERENCE_ITEM'
+  | 'IMAGE_ITEM'
+  | 'LATLONG_ITEM'
+  | 'LONG_ITEM'
+  | 'MARKDOWN_ITEM'
+  | 'MESSAGE_THREAD'
+  | 'MESSAGE_THREAD_NOTIFICATION'
+  | 'MONEY_ITEM'
+  | 'OAUTH_TOKEN'
+  | 'PERMISSION'
+  | 'PERSON'
+  | 'PERSON_NAME'
+  | 'PROJECT'
+  | 'ROLE'
+  | 'TASK'
+  | 'TELEPHONE'
+  | 'TEMPLATE_ITEM'
+  | 'TEXT_ITEM'
+  | 'THREAD_POST'
+  | 'WEBHOOK_SUBSCRIPTION'
+  | 'WORKFLOW';
+
+/**
+ * A subscription that calls `destinationUrl` when a watched kind of object
+ * changes. `secret` is write-only in spirit: required on create, and never
+ * to be shown back to users.
+ */
+export interface WebhookSubscription {
+  urn: string;
+  url?: string;
+  /** The API client deliveries are made as */
+  apiClient?: ApiClient | null;
+  auth?: WebhookAuth | null;
+  subject?: WebhookSubject | null;
+  event?: WebhookEvent | null;
+  /** The most deliveries a minute */
+  eventsPerMinute?: number | null;
+  /** When the subscription stops (ISO 8601) */
+  expirationTimestamp?: string | null;
+  destinationUrl?: string | null;
+  /** Required on create; never display it */
+  secret?: string | null;
+}
+
+/** One time watched changes fired one or more subscriptions. */
+export interface WebhookTrigger {
+  urn: string;
+  url?: string;
+  owner?: Company | null;
+  /** The subscriptions this trigger fired */
+  subscriptions?: WebhookSubscription[] | null;
+  /** The URN of the object that changed */
+  targetUrn?: string | null;
+  subject?: WebhookSubject | null;
+  event?: WebhookEvent | null;
+  /** When it fired (ISO 8601) */
+  timestamp?: string | null;
+  /** Delivery attempts; their shape isn't specified yet */
+  deliveries?: unknown[] | null;
+}
+
+
+// ==========================================
+// STATISTICS
+// ==========================================
+
+/** One day of a usage series: its date (`2026-10-17`) and a count per series key. */
+export interface UsagePoint {
+  date: string;
+  [series: string]: number | string;
+}
+
+/**
+ * A company's daily API usage from `Endpoint.STAT_USAGE`, shaped for charts:
+ * a label per series key, and one point a day. Days without calls are left
+ * out. Readable only in an administrator's session.
+ */
+export interface UsageStats {
+  chartConfig: Record<string, { label: string }>;
+  data: UsagePoint[];
+}

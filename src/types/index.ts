@@ -760,11 +760,24 @@ export interface SearchItem {
   type: SearchItemType;
   /** The display name of the search item (if applicable) */
   name?: string | null;
-  /** 
-   * The actual content of the item. 
+  /**
+   * The actual content of the item, matching `type`.
    * This is a union of all possible searchable entities.
    */
-  item?: Entity | EntityList | Group | Identity | Project | Task | null;
+  item?:
+    | ApiClient
+    | Entity
+    | EntityList
+    | Group
+    | GroupMembership
+    | Identity
+    | Permission
+    | Project
+    | Task
+    | WebhookSubscription
+    | WebhookTrigger
+    | Workflow
+    | null;
 }
 
 /**
@@ -977,6 +990,20 @@ export interface Permission {
   fromTimestamp?: string | null;
   /** When the grant ends (ISO 8601), if it does */
   toTimestamp?: string | null;
+}
+
+/**
+ * A role for role based access control. Identities and API clients
+ * associated with the role get its permissions.
+ */
+export interface Role {
+  urn: string;
+  url?: string;
+  /** The company that owns this role */
+  owner?: Company | null;
+  name?: string | null;
+  identities?: Identity[];
+  clients?: ApiClient[];
 }
 
 

@@ -26,7 +26,7 @@ export const Method = {
 } as const;
 export type Method = (typeof Method)[keyof typeof Method];
 
-type QueryParams = Record<string, string | number | boolean | null | undefined>;
+export type QueryParams =Record<string, string | number | boolean | null | undefined>;
 
 export class BaackClient {
   private baseUrl: string;

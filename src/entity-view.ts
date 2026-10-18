@@ -19,10 +19,6 @@
  *   view.markdown('body');                // MarkdownItem | undefined
  *   view.image('hero');                   // ImageItem | undefined
  *   view.texts('gallery-captions');       // TextItem[] (all entries, sortOrder-ordered)
- *
- * Adjust the import path below to wherever your generated types actually
- * live (e.g. 'baack-ts-client' if published, or a relative path into
- * this repo).
  */
 
 import type {
@@ -41,7 +37,7 @@ import type {
   LinkItem,
   ReferenceItem
 } from './types/index.ts';
-import { BaackClient } from './client.ts';
+import { BaackClient, type QueryParams } from './client.ts';
 import { Endpoint } from './endpoints.ts';
 
 /** Anything shaped like an Entity content item (has a name + sortOrder). */
@@ -377,10 +373,18 @@ export class EntityView {
    * Fetches an entity view from the API and wraps it directly, so callers
    * never have to touch the raw Entity at all:
    *
-   *   const view = await EntityView.fetch(client, '/home');
+   *   const view = await EntityView.fetch(client, '/home', { language: 'en-GB', variant: '' });
+   *
+   * `params` and `headers` are passed to `client.read`, for example to
+   * forward a visitor's `Accept-Language`.
    */
-  static async fetch(client: BaackClient, path: string): Promise<EntityView> {
-    const entity = await client.read<Entity>(Endpoint.ENTITY_VIEW, path);
+  static async fetch(
+    client: BaackClient,
+    path: string,
+    params?: QueryParams,
+    headers?: Record<string, string>,
+  ): Promise<EntityView> {
+    const entity = await client.read<Entity>(Endpoint.ENTITY_VIEW, path, params, headers);
     return new EntityView(entity);
   }
 

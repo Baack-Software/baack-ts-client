@@ -11,9 +11,6 @@ webhooks, need to ride out the API being over capacity or briefly unreachable.
 - Only retry idempotent operations by default (`read`); creates and updates opt in.
 - Allow a custom `fetch` in `BaackConfig`, so callers can test without replacing the global one.
 
-Until then, www-baack-co-cas retries in its own wrapper (`src/lib/baack/api.ts`, `createBaackReader`); drop that loop
-once the client supports retries.
-
 ## `tr()`: transpose an entity's items by name
 
 Plain `fetch` users get the entity shape back, with items grouped by type:
@@ -30,9 +27,6 @@ const { title: [title], body: [body] } = tr(await res.json())
 - Have no runtime dependencies, so it can also ship as a tiny standalone snippet for `fetch` users.
 - Document what happens when two collections use the same name.
 
-www.baack.co's home hero shows it as "(planned)" in its fetch example (`src/components/islands/HeroContentDemo.tsx`);
-drop that once it ships.
-
 ## Make write and `ALL` permission tokens clearly server-side only
 
 The README says to keep tokens server-side or use a read-only API client in the browser, but nothing in the client
@@ -47,6 +41,3 @@ configuration (`.env`, a build or deploy secret), never in code that ships to a 
   endpoint, or the API's 403 answers.
 - Consider separate entry points or types for reading and writing, so browser bundles can't reach write methods by
   accident.
-
-www-baack-co-cas currently builds with a write token on purpose while its placeholders are pushed into the CMS, and
-plans to downgrade its builds to read-only afterwards (see its TODO.md).

@@ -3,22 +3,19 @@
   "version": "0.0.2",
   "description": "Official TypeScript client for Baack.co Headless CMS",
   "keywords": [
-    "CMS",
-    "headless",
-    "content",
-    "management",
-    "DXP",
-    "headless",
-    "digital",
-    "experience",
-    "platform",
-    "Project",
-    "and",
+    "cms",
+    "headless-cms",
+    "content-management",
+    "dxp",
+    "digital-experience-platform",
+    "crm",
+    "project-management",
     "tasks",
-    "Communities",
-    "and",
+    "communities",
     "chat",
-    "threads"
+    "message-threads",
+    "typescript",
+    "api-client"
   ],
   "homepage": "https://github.com/Baack-Software/baack-ts-client#readme",
   "bugs": {
@@ -33,11 +30,25 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "files": [
-    "dist"
+    "dist",
+    "src"
   ],
+  "engines": {
+    "node": ">=18"
+  },
+  "sideEffects": false,
   "scripts": {
-    "build": "tsc"
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "npm run clean && tsc",
+    "test": "npm run build && tsc -p test/types && node --test test/*.test.js",
+    "prepublishOnly": "npm test"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

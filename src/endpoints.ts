@@ -22,17 +22,19 @@ export const Endpoint = Object.freeze({
     IDENTITY_NOTIFICATION_INBOX: '/n/v1/identitynotificationinbox/',
     IMAGE: '/n/v1/imageitem/',
     IMAGE_HISTORY: '/n/v1/imageitemhistory/',
-    IMAGE_FILE: '/n/v1/imagefile',
+    IMAGE_FILE: '/n/v1/imageitemfile',
     JSON: '/n/v1/jsonitem/',
     JSON_HISTORY: '/n/v1/jsonitemhistory/',
     LAT_LONG: '/n/v1/latlongitem/',
-    LAT_LONG_HISTORY: '/n/v1/latlonghistory/',
+    LAT_LONG_HISTORY: '/n/v1/latlongitemhistory/',
+    LINK: '/n/v1/linkitem/',
+    LINK_HISTORY: '/n/v1/linkitemhistory/',
     LONG: '/n/v1/longitem/',
     LONG_HISTORY: '/n/v1/longitemhistory/',
     MARKDOWN:  '/n/v1/markdownitem/',
     MARKDOWN_HISTORY: '/n/v1/markdownitemhistory/',
     MESSAGE_THREAD: '/n/v1/messagethread/',
-    MESSAGE_THREAD_NOTIFICATION: '/n/v1/messagethreadnotificaiton/',
+    MESSAGE_THREAD_NOTIFICATION: '/n/v1/messagethreadnotification/',
     MONEY: '/n/v1/moneyitem/',
     MONEY_HISTORY: '/n/v1/moneyitemhistory/',
     OAUTH_TOKEN: '/n/v1/oauthtoken/',
@@ -41,6 +43,13 @@ export const Endpoint = Object.freeze({
     PERSON: '/n/v1/person/',
     PERSON_NAME: '/n/v1/personname/',
     SEARCH : '/n/v1/search/',
+    REFERENCE: '/n/v1/referenceitem/',
+    /**
+     * Not yet released by the API; follows the pattern of the other item
+     * history endpoints and may change.
+     * @experimental
+     */
+    REFERENCE_HISTORY: '/n/v1/referenceitemhistory/',
     TASK: '/n/v1/task/',
     TASK_LOG: '/n/v1/tasklog/',
     TASK_LOGS: '/n/v1/tasklogs/',

@@ -6,6 +6,27 @@
 // SYSTEM & INFRASTRUCTURE
 // ==========================================
 
+/**
+ * General API error object, returned with a failed request.
+ */
+export type ApiCode =
+  | 'INVALID_REPRESENTATION'
+  | 'REPRESENTATION_MISSING_REQUIRED_FIELD'
+  | 'READ_SUCCESS'
+  | 'UPDATE_SUCCESS'
+  | 'DELETE_SUCCESS'
+  | 'NOT_FOUND'
+  | 'CREATE_SUCCESS'
+  | 'BAD_REQUEST'
+  | 'QUOTA_EXCEEDED';
+
+export interface ApiError {
+  apiCode?: ApiCode;
+  /** A human-readable description of the problem. */
+  detail?: string;
+  httpCode?: number;
+}
+
 export interface Pagination {
   /** Offset hint used in paginated queries */
   after?: string | null;
@@ -225,6 +246,12 @@ export interface Entity {
   jsons?: JsonItem[];
   links?: LinkItem[];
   references?: ReferenceItem[];
+  /**
+   * Entity view only: the other language versions of the returned entity, in
+   * the same variant, as shallow links. Absent when there are none, and
+   * ignored on update. For `<link rel="alternate" hreflang>`.
+   */
+  alternativeLanguages?: Entity[];
 }
 
 export interface TextItem { 
@@ -307,6 +334,7 @@ export interface JsonItem {
   url?: string;
   name: string;
   sortOrder: number;
+  /** Any JSON object, sent and returned as structured JSON, not as a string. */
   value: unknown;
   entity?: Entity | null;
   isPublished?: boolean | null;
@@ -549,7 +577,7 @@ export type TaskActivity =
   | 'STATUS_PENDING'
   | 'STATUS_IN_PROGRESS'
   | 'STATUS_BLOCKED'
-  | 'STATUS_COMPL_ETED' // Note: Using provided spelling if exact, but corrected to COMPLETED below
+  | 'STATUS_COMPLETED'
   | 'STATUS_CLOSED'
   | 'PRIORITY_LOW'
   | 'PRIORITY_MEDIUM'
@@ -867,7 +895,11 @@ export interface EntityList {
 export interface EntityListItem {
   /** The URN of the entity item */
   urn: string;
-  /** Reference to the underlying Entity */
+  /**
+   * The listed entity. Links are shallow: the list returns it with only `urn`
+   * (and `url`) set and does not render it; read its view to hydrate it. A
+   * full Entity can be sent here, and only its URN is stored.
+   */
   entity: Entity;
   /** The sort order for the entity in the listing */
   sortOrder?: number | null;

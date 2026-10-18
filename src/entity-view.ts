@@ -19,10 +19,6 @@
  *   view.markdown('body');                // MarkdownItem | undefined
  *   view.image('hero');                   // ImageItem | undefined
  *   view.texts('gallery-captions');       // TextItem[] (all entries, sortOrder-ordered)
- *
- * Adjust the import path below to wherever your generated types actually
- * live (e.g. 'baack-ts-client' if published, or a relative path into
- * this repo).
  */
 
 import type {
@@ -37,9 +33,11 @@ import type {
   DateTimeItem,
   ImageItem,
   LatLongItem,
-  JsonItem
+  JsonItem,
+  LinkItem,
+  ReferenceItem
 } from './types/index.ts';
-import { BaackClient } from './client.ts';
+import { BaackClient, type QueryParams } from './client.ts';
 import { Endpoint } from './endpoints.ts';
 
 /** Anything shaped like an Entity content item (has a name + sortOrder). */
@@ -126,9 +124,12 @@ export class EntityView {
    * Useful for conditionally rendering optional sections.
    */
   has(name: string): boolean {
-    const { texts, markdowns, templates, booleans, doubles, longs, money, dateTimes, images, latLongs, jsons } =
-      this.entity;
-    return [texts, markdowns, templates, booleans, doubles, longs, money, dateTimes, images, latLongs, jsons].some(
+    const {
+      texts, markdowns, templates, booleans, doubles, longs, money, dateTimes, images, latLongs, jsons, links, references,
+    } = this.entity;
+    return [
+      texts, markdowns, templates, booleans, doubles, longs, money, dateTimes, images, latLongs, jsons, links, references,
+    ].some(
       (collection) => (collection as NamedItem[] | undefined)?.some((item) => item.name === name),
     );
   }
@@ -188,6 +189,14 @@ export class EntityView {
 
   hasJson(name: string, sortOrder = 0): boolean {
     return this.hasByNameAndSortOrder(this.entity.jsons, name, sortOrder);
+  }
+
+  hasLink(name: string, sortOrder = 0): boolean {
+    return this.hasByNameAndSortOrder(this.entity.links, name, sortOrder);
+  }
+
+  hasReference(name: string, sortOrder = 0): boolean {
+    return this.hasByNameAndSortOrder(this.entity.references, name, sortOrder);
   }
 
   // ---------------------------------------------------------------------
@@ -333,6 +342,30 @@ export class EntityView {
   }
 
   // ---------------------------------------------------------------------
+  // Links
+  // ---------------------------------------------------------------------
+
+  link(name: string, sortOrder = 0): LinkItem | undefined {
+    return this.byNameAndSortOrder<LinkItem>(this.entity.links, name, sortOrder);
+  }
+
+  links(name: string): LinkItem[] {
+    return this.allByName<LinkItem>(this.entity.links, name);
+  }
+
+  // ---------------------------------------------------------------------
+  // References to other entities
+  // ---------------------------------------------------------------------
+
+  reference(name: string, sortOrder = 0): ReferenceItem | undefined {
+    return this.byNameAndSortOrder<ReferenceItem>(this.entity.references, name, sortOrder);
+  }
+
+  references(name: string): ReferenceItem[] {
+    return this.allByName<ReferenceItem>(this.entity.references, name);
+  }
+
+  // ---------------------------------------------------------------------
   // Static helpers
   // ---------------------------------------------------------------------
 
@@ -340,10 +373,18 @@ export class EntityView {
    * Fetches an entity view from the API and wraps it directly, so callers
    * never have to touch the raw Entity at all:
    *
-   *   const view = await EntityView.fetch(client, '/home');
+   *   const view = await EntityView.fetch(client, '/home', { language: 'en-GB', variant: '' });
+   *
+   * `params` and `headers` are passed to `client.read`, for example to
+   * forward a visitor's `Accept-Language`.
    */
-  static async fetch(client: BaackClient, path: string): Promise<EntityView> {
-    const entity = await client.read<Entity>(Endpoint.ENTITY_VIEW, path);
+  static async fetch(
+    client: BaackClient,
+    path: string,
+    params?: QueryParams,
+    headers?: Record<string, string>,
+  ): Promise<EntityView> {
+    const entity = await client.read<Entity>(Endpoint.ENTITY_VIEW, path, params, headers);
     return new EntityView(entity);
   }
 

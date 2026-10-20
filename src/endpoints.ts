@@ -6,6 +6,8 @@ export const Endpoint = Object.freeze({
      * Without a URN it sets up a new account; `ACCOUNT_SETUP + '/' + urn` updates one.
      */
     ACCOUNT_SETUP: '/form/account-setup',
+    /** Adds a user to an account company the session user administers: a form POST (`BaackClient.submitForm`). */
+    ADD_USER: '/form/add-user',
     ADDRESS: '/n/v1/address/',
     API_CLIENT: '/n/v1/apiclient/',
     BEARER_TOKEN: '/n/v1/bearertoken/',

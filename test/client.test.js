@@ -84,3 +84,95 @@ test('a non-JSON error body has no API error', async () => {
   assert.equal(error.apiError, undefined);
   assert.equal(error.detail, undefined);
 });
+
+const MISSING_FIELD = '{"httpCode":400,"apiCode":"REPRESENTATION_MISSING_REQUIRED_FIELD","detail":"updatedTimestamp"}';
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+test('a refused request is permanent: the same request is not sent again', async () => {
+  respond(400, MISSING_FIELD);
+  const guarded = new BaackClient({ baseUrl: 'https://api.example.test' });
+  const body = { urn: 'n1', notificationCount: 0 };
+
+  const first = await guarded.update(Endpoint.MESSAGE_THREAD_NOTIFICATION, 'n1', body).catch((error) => error);
+  assert.ok(isBaackApiError(first));
+  assert.equal(first.isRefused, true);
+  assert.equal(first.isRetryable, false);
+  assert.equal(first.apiError.apiCode, 'REPRESENTATION_MISSING_REQUIRED_FIELD');
+  assert.equal(first.detail, 'updatedTimestamp');
+
+  // A caller looping on it gets the same error at once, without another request.
+  for (let i = 0; i < 20; i++) {
+    const again = await guarded.update(Endpoint.MESSAGE_THREAD_NOTIFICATION, 'n1', body).catch((error) => error);
+    assert.equal(again, first);
+  }
+  assert.equal(calls.length, 1);
+
+  // Acting on the error (sending the missing field) is a different request, so it's sent.
+  respond(200, '{"urn":"n1"}');
+  await guarded.update(Endpoint.MESSAGE_THREAD_NOTIFICATION, 'n1', { ...body, updatedTimestamp: '2026-10-19T12:00:00' });
+  assert.equal(calls.length, 2);
+});
+
+test('after a server error the same request backs off, doubling, then is sent again', async () => {
+  respond(503, '');
+  const guarded = new BaackClient({ baseUrl: 'https://api.example.test', failureGuard: { backoffMs: 40 } });
+  const first = await guarded.read(Endpoint.ENTITY, 'e1').catch((error) => error);
+  assert.equal(first.isRetryable, true);
+  assert.equal(first.isRefused, false);
+  assert.equal(await guarded.read(Endpoint.ENTITY, 'e1').catch((error) => error), first);
+  assert.equal(calls.length, 1);
+
+  await wait(50);
+  await guarded.read(Endpoint.ENTITY, 'e1').catch(() => undefined);
+  assert.equal(calls.length, 2);
+  // The second wait is 80 ms: still held after 50.
+  await wait(50);
+  await guarded.read(Endpoint.ENTITY, 'e1').catch(() => undefined);
+  assert.equal(calls.length, 2);
+
+  respond(200, '{"urn":"e1"}');
+  await wait(40);
+  assert.deepEqual(await guarded.read(Endpoint.ENTITY, 'e1'), { urn: 'e1' });
+  assert.equal(calls.length, 3);
+
+  // A success clears the record: after the next failure, the wait is back to the first (40 ms, not 160).
+  respond(503, '');
+  await guarded.read(Endpoint.ENTITY, 'e1').catch(() => undefined);
+  await wait(50);
+  await guarded.read(Endpoint.ENTITY, 'e1').catch(() => undefined);
+  assert.equal(calls.length, 5);
+});
+
+test('network failures back off too', async () => {
+  globalThis.fetch = async (url, init) => {
+    calls.push({ url, init });
+    throw new TypeError('fetch failed');
+  };
+  const guarded = new BaackClient({ baseUrl: 'https://api.example.test' });
+  await assert.rejects(guarded.read(Endpoint.ENTITY, 'e1'), TypeError);
+  await assert.rejects(guarded.read(Endpoint.ENTITY, 'e1'), TypeError);
+  assert.equal(calls.length, 1);
+});
+
+test('failureGuard: false sends every request', async () => {
+  respond(400, MISSING_FIELD);
+  const unguarded = new BaackClient({ baseUrl: 'https://api.example.test', failureGuard: false });
+  await assert.rejects(unguarded.read(Endpoint.ENTITY, 'e1'));
+  await assert.rejects(unguarded.read(Endpoint.ENTITY, 'e1'));
+  assert.equal(calls.length, 2);
+});
+
+test('submitForm posts a urlencoded body to the path, never the URL, and reads refused fields', async () => {
+  respond(400, '{"httpCode":400,"apiCode":"REPRESENTATION_MISSING_REQUIRED_FIELD","fields":[{"name":"company-name"}]}');
+  const form = new URLSearchParams({ 'company-name': '', 'person-telephone': '+447890123456' });
+  const error = await client
+    .submitForm(`${Endpoint.ACCOUNT_SETUP}/acc-1`, form, { 'X-Baack-Request': '1' })
+    .catch((e) => e);
+
+  assert.equal(calls[0].url, 'https://api.example.test/form/account-setup/acc-1');
+  assert.equal(calls[0].init.method, 'POST');
+  assert.equal(calls[0].init.body, 'company-name=&person-telephone=%2B447890123456');
+  assert.equal(calls[0].init.headers['Content-Type'], 'application/x-www-form-urlencoded');
+  assert.equal(calls[0].init.headers['X-Baack-Request'], '1');
+  assert.deepEqual(error.apiError.fields, [{ name: 'company-name' }]);
+});

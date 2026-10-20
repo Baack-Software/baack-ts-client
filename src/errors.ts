@@ -44,6 +44,20 @@ export class BaackApiError extends Error {
     return this.status >= 500;
   }
 
+  /**
+   * Whether the API refused the request itself: a 4xx other than a timeout (408) or rate limit (429), such as a
+   * missing required field. These are permanent: sending the same request again gets the same answer, so act on
+   * `apiError` (for example its `apiCode` and `detail`) or change the request, and never loop on it.
+   */
+  get isRefused(): boolean {
+    return this.status >= 400 && this.status < 500 && this.status !== 408 && this.status !== 429;
+  }
+
+  /** Whether the same request may succeed later: a server error, a timeout (408) or a rate limit (429). */
+  get isRetryable(): boolean {
+    return this.status >= 500 || this.status === 408 || this.status === 429;
+  }
+
   /** The API error object from the body, when there is one. */
   get apiError(): ApiError | undefined {
     const parsed = this.json<ApiError>();

@@ -5,9 +5,13 @@
 `BaackClient` makes one attempt per request. Unattended callers, such as static site builds triggered by publish
 webhooks, need to ride out the API being over capacity or briefly unreachable.
 
+The `failureGuard` (19 Oct 2026) already stops repeats: a refused request isn't sent again unchanged, and a transient
+failure holds the same request back with a doubling wait. What's left is retrying by itself, for unattended callers:
+
 - Add an optional retry setting to `BaackConfig`, e.g. `retry: { attempts, baseDelayMs, maxDelayMs }`, off by default.
 - Retry 429 and 5xx responses and network failures (`fetch` rejecting with a `TypeError`); never other 4xx responses.
-- Back off exponentially with jitter, and honour a `Retry-After` header when the API sends one.
+- Back off exponentially with jitter, and honour a `Retry-After` header when the API sends one (the guard's wait
+  should honour it too; `BaackApiError` doesn't keep response headers yet).
 - Only retry idempotent operations by default (`read`); creates and updates opt in.
 - Allow a custom `fetch` in `BaackConfig`, so callers can test without replacing the global one.
 

@@ -92,6 +92,22 @@ try {
 A network failure (no response at all) rejects with fetch's own error. An empty response body, such as a `204` from a
 delete, resolves to `undefined`.
 
+Two kinds of failure need different handling, and the error says which:
+
+- **`isRefused`**: a 4xx other than a timeout (`408`) or rate limit (`429`). The request itself is wrong, and the API
+  usually says how: for example `{ "apiCode": "REPRESENTATION_MISSING_REQUIRED_FIELD", "detail": "updatedTimestamp" }`.
+  It's permanent: sending the same request again gets the same answer, so act on `apiError`, change the request, or
+  tell the user. Never retry it unchanged.
+- **`isRetryable`**: a 5xx, `408` or `429`. The same request may succeed later, after a wait.
+
+The client guards against loops either way (`failureGuard`, on by default): after a refusal it won't send the same
+request (method, URL and body) again for 5 minutes, and after a server error, timeout, rate limit or network failure
+it waits 1 second, doubling up to 1 minute, before sending the same request again. Until then a repeat fails at once
+with the same error, without a request. A different request is always sent, and a success clears the record. Tune it
+with `failureGuard: { refusedHoldMs, backoffMs, maxBackoffMs }`, or turn it off with `failureGuard: false`. A caller that
+retries on its own schedule (such as a build reader riding out a brief outage) should turn it off, or its retries
+inside the wait fail at once.
+
 ### Browser use with a Baack session
 
 A browser client on another origin that relies on the user's Baack session needs `credentials: 'include'`:
@@ -101,6 +117,9 @@ const client = new BaackClient({ baseUrl: 'https://api.baack.co', credentials: '
 ```
 
 `client.upload(endpoint, formData)` posts a multipart form, for example an image file.
+
+`client.submitForm(endpoint, fields)` posts a urlencoded form (`URLSearchParams`), such as the account setup form
+(`Endpoint.ACCOUNT_SETUP`), and reads the JSON reply.
 
 ## Feedback 
 We welcome feedback, please create feature requests and issues in GitHub to allow them to be easily tracked.

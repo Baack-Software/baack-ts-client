@@ -25,6 +25,14 @@ export interface ApiError {
   /** A human-readable description of the problem. */
   detail?: string;
   httpCode?: number;
+  /** For a form post (`BaackClient.submitForm`), the fields that were refused, by form field name. */
+  fields?: FormFieldError[];
+}
+
+/** A refused form field: its name in the form, and what's wrong with it. */
+export interface FormFieldError {
+  name: string;
+  detail?: string;
 }
 
 export interface Pagination {
@@ -144,6 +152,41 @@ export interface Company {
   organisation?: Organisation |
     null;
   entity?: Entity | null;
+}
+
+/** The product an account is on. */
+export type AccountProduct = 'STANDARD' | 'STARTUP_INITIAL' | 'BUSINESS_INITIAL' | 'ENTERPRISE_INITIAL';
+
+/**
+ * An account: Baack's record of a customer, as given when the account was set up. It's Baack's data, not the
+ * customer's: an administrator of the account's owned company (through its `organisation`) can read it to check
+ * their details, but that doesn't let them change it through the API. Accounts are created and updated with the
+ * account setup form (`Endpoint.ACCOUNT_SETUP`).
+ */
+export interface Account {
+  urn: string;
+  product?: AccountProduct | null;
+  /** The billing currency, an ISO 4217 code such as `GBP`. */
+  currency?: string | null;
+  website?: string | null;
+  domainName?: string | null;
+  ukCompanyNumber?: string | null;
+  ukDunsNumber?: string | null;
+  euBris?: string | null;
+  /** Baack's customer company for the account, owned by Baack: the company that is billed. */
+  baackCustomer?: Company | null;
+  /**
+   * Baack's customer identity that pays: the person who set up the account, with the names, telephone and billing
+   * address given then.
+   */
+  remitter?: Identity | null;
+  /** The organisation of the customer's own (owned) company, which holds their data on Baack. */
+  organisation?: Organisation | null;
+}
+
+/** The accounts whose owned company the session user administers, from `Endpoint.ACCOUNTS`. */
+export interface Accounts {
+  accounts?: Account[];
 }
 
 /** A page of the companies the caller can manage, from `Endpoint.COMPANIES`. */

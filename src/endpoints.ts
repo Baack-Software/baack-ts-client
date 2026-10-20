@@ -1,4 +1,11 @@
 export const Endpoint = Object.freeze({
+    /** The session user's accounts (read only). */
+    ACCOUNTS: '/n/v1/accounts',
+    /**
+     * The account setup form: a urlencoded POST (`BaackClient.submitForm`) that answers JSON when asked for it.
+     * Without a URN it sets up a new account; `ACCOUNT_SETUP + '/' + urn` updates one.
+     */
+    ACCOUNT_SETUP: '/form/account-setup',
     ADDRESS: '/n/v1/address/',
     API_CLIENT: '/n/v1/apiclient/',
     BEARER_TOKEN: '/n/v1/bearertoken/',

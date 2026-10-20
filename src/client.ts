@@ -11,6 +11,41 @@ export interface BaackConfig {
    * origin. Defaults to the fetch default ('same-origin').
    */
   credentials?: 'omit' | 'same-origin' | 'include';
+  /**
+   * Stops a failed request being sent again and again, for example by a caller that retries on every render. On by
+   * default; `false` turns it off.
+   *
+   * - A refused request (`BaackApiError.isRefused`: a 4xx such as a missing required field) is permanent: the same
+   *   request (method, URL and body) isn't sent again for `refusedHoldMs`, and fails at once with the same error.
+   * - After a server error, timeout, rate limit or network failure, the same request waits `backoffMs`, doubling with
+   *   each failure in a row up to `maxBackoffMs`, and fails at once with the last error until then.
+   *
+   * A different request (another body, URL or method) is always sent, and a success clears the request's record.
+   * The client doesn't retry by itself.
+   */
+  failureGuard?: FailureGuard | false;
+}
+
+export interface FailureGuard {
+  /** How long a refused request isn't sent again unchanged. Default 5 minutes. */
+  refusedHoldMs?: number;
+  /** The wait after the first failure that may pass. Default 1 second. */
+  backoffMs?: number;
+  /** The longest wait. Default 1 minute. */
+  maxBackoffMs?: number;
+}
+
+const GUARD_DEFAULTS: Required<FailureGuard> = { refusedHoldMs: 300_000, backoffMs: 1_000, maxBackoffMs: 60_000 };
+
+/** The most failed requests a client remembers; the oldest is forgotten first. */
+const MAX_REMEMBERED_FAILURES = 500;
+
+interface FailedRequest {
+  error: unknown;
+  /** No request before this time (ms since the epoch). */
+  until: number;
+  /** Failures in a row. */
+  failures: number;
 }
 
 /**
@@ -32,11 +67,15 @@ export class BaackClient {
   private baseUrl: string;
   private defaultHeaders: Record<string, string>;
   private credentials: BaackConfig['credentials'];
+  private guard: Required<FailureGuard> | undefined;
+  /** Recently failed requests, by method, URL and body. */
+  private failed = new Map<string, FailedRequest>();
 
   constructor(config: BaackConfig) {
     this.baseUrl = config.baseUrl.replace(/\/$/, ''); // Remove trailing slash
     this.defaultHeaders = { ...config.headers };
     this.credentials = config.credentials;
+    this.guard = config.failureGuard === false ? undefined : { ...GUARD_DEFAULTS, ...config.failureGuard };
   }
 
   /**
@@ -78,15 +117,41 @@ export class BaackClient {
     }
 
     const method = options.method ?? Method.READ;
-    const response = await fetch(url.toString(), init);
+    const sent = typeof init.body === 'string' ? init.body : undefined;
+    const key = `${method} ${url.toString()} ${sent ?? ''}`;
+    const held = this.guard && this.failed.get(key);
+    if (held && Date.now() < held.until) throw held.error;
+
+    let response: Response;
+    try {
+      response = await fetch(url.toString(), init);
+    } catch (error) {
+      // A network failure (fetch rejects with a TypeError): transient, so back off.
+      this.recordFailure(key, error, false);
+      throw error;
+    }
     const text = await response.text();
 
     if (!response.ok) {
-      const sent = typeof init.body === 'string' ? init.body : undefined;
-      throw new BaackApiError(response.status, response.statusText, text, method, url.toString(), sent);
+      const error = new BaackApiError(response.status, response.statusText, text, method, url.toString(), sent);
+      this.recordFailure(key, error, error.isRefused);
+      throw error;
     }
 
+    this.failed.delete(key);
     return (text ? JSON.parse(text) : undefined) as T;
+  }
+
+  /** Remembers a failed request, so the guard can hold back the same request (see `BaackConfig.failureGuard`). */
+  private recordFailure(key: string, error: unknown, refused: boolean): void {
+    if (!this.guard) return;
+    const failures = (this.failed.get(key)?.failures ?? 0) + 1;
+    const wait = refused
+      ? this.guard.refusedHoldMs
+      : Math.min(this.guard.backoffMs * 2 ** (failures - 1), this.guard.maxBackoffMs);
+    this.failed.delete(key);
+    this.failed.set(key, { error, until: Date.now() + wait, failures });
+    if (this.failed.size > MAX_REMEMBERED_FAILURES) this.failed.delete(this.failed.keys().next().value!);
   }
 
   /**
@@ -127,6 +192,19 @@ export class BaackClient {
    */
   public async upload<T>(endpoint: string, form: FormData): Promise<T> {
     return this.request<T>(endpoint, { method: Method.CREATE, body: form });
+  }
+
+  /**
+   * POST a urlencoded form, such as the account setup form, asking for JSON back. The fields go in the request body,
+   * never the URL. `headers` are added to this request only. A refused form answers with an `ApiError` whose
+   * `fields` name the fields at fault.
+   */
+  public async submitForm<T>(endpoint: string, form: URLSearchParams, headers?: Record<string, string>): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: Method.CREATE,
+      body: form.toString(),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', ...headers },
+    });
   }
 
   /**

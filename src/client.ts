@@ -155,10 +155,10 @@ export class BaackClient {
   }
 
   /**
-   * CREATE / POST method for creating resources
+   * CREATE / POST method for creating resources. `headers` are added to this request only, e.g. a CSRF header.
    */
-  public async create<T>(endpoint: string, body?: unknown): Promise<T> {
-    return this.request<T>(endpoint, jsonInit(Method.CREATE, body));
+  public async create<T>(endpoint: string, body?: unknown, headers?: Record<string, string>): Promise<T> {
+    return this.request<T>(endpoint, jsonInit(Method.CREATE, body, headers));
   }
 
   /**
@@ -171,18 +171,19 @@ export class BaackClient {
   }
 
   /**
-   * UPDATE / PUT for updating representations
+   * UPDATE / PUT for updating representations. `headers` are added to this request only.
    */
-  public async update<T>(endpoint: string, urn: string, body?: unknown): Promise<T> {
-    return this.request<T>(join(endpoint, urn), jsonInit(Method.UPDATE, body));
+  public async update<T>(endpoint: string, urn: string, body?: unknown, headers?: Record<string, string>): Promise<T> {
+    return this.request<T>(join(endpoint, urn), jsonInit(Method.UPDATE, body, headers));
   }
 
   /**
    * DELETE for deleting representations
    */
-  public async delete<T = undefined>(endpoint: string, urn: string): Promise<T> {
+  public async delete<T = undefined>(endpoint: string, urn: string, headers?: Record<string, string>): Promise<T> {
     return this.request<T>(join(endpoint, urn), {
       method: Method.DELETE,
+      ...(headers ? { headers } : {}),
     });
   }
 
@@ -231,6 +232,7 @@ function join(endpoint: string, urn: string): string {
   return endpoint.endsWith('/') && urn.startsWith('/') ? endpoint + urn.slice(1) : endpoint + urn;
 }
 
-function jsonInit(method: Method, body: unknown): RequestInit {
-  return body === undefined ? { method } : { method, body: JSON.stringify(body) };
+function jsonInit(method: Method, body: unknown, headers?: Record<string, string>): RequestInit {
+  const init: RequestInit = body === undefined ? { method } : { method, body: JSON.stringify(body) };
+  return headers ? { ...init, headers } : init;
 }

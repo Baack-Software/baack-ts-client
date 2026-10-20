@@ -1123,6 +1123,17 @@ export interface WebhookSubscription {
   secret?: string | null;
 }
 
+/** A bearer token for an API client, from `Endpoint.BEARER_TOKEN`. The token is returned when it's created. */
+export interface BearerToken {
+  urn: string;
+  url?: string;
+  apiClient?: ApiClient | null;
+  /** The token itself: keep it server-side, and never log or display it after it's first shown. */
+  bearerToken?: string | null;
+  /** When the token stops working (ISO 8601); required on create. */
+  expirationTimestamp?: string | null;
+}
+
 /** One time watched changes fired one or more subscriptions. */
 export interface WebhookTrigger {
   urn: string;

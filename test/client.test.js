@@ -176,3 +176,15 @@ test('submitForm posts a urlencoded body to the path, never the URL, and reads r
   assert.equal(calls[0].init.headers['X-Baack-Request'], '1');
   assert.deepEqual(error.apiError.fields, [{ name: 'company-name' }]);
 });
+
+test('create, update and delete add per-request headers, keeping the JSON Content-Type', async () => {
+  respond(200, '{}');
+  await client.create(Endpoint.TASK, { name: 'a' }, { 'X-Baack-Request': '1' });
+  await client.update(Endpoint.TASK, 't-1', { name: 'b' }, { 'X-Baack-Request': '1' });
+  await client.delete(Endpoint.TASK, 't-1', { 'X-Baack-Request': '1' });
+
+  for (const call of calls) assert.equal(call.init.headers['X-Baack-Request'], '1');
+  assert.equal(calls[0].init.headers['Content-Type'], 'application/json');
+  assert.equal(calls[1].url, 'https://api.example.test/n/v1/task/t-1');
+  assert.equal(calls[2].init.method, 'DELETE');
+});

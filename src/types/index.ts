@@ -732,6 +732,7 @@ export type SearchOrder = 'UNDEFINED' | 'NAME';
 
 export type IncludeScope = 
   | 'API_CLIENT'
+  | 'COMPANY'
   | 'ENTITY' 
   | 'ENTITY_LIST' 
   | 'GROUP' 
@@ -749,6 +750,7 @@ export type IncludeScope =
  */
 export type SearchItemType = 
   | 'API_CLIENT'
+  | 'COMPANY'
   | 'ENTITY' 
   | 'ENTITY_LIST' 
   | 'GROUP' 

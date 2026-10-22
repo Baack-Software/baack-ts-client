@@ -10,6 +10,14 @@ Baack offers digital experiences for:
 * Project and task management: build internal ticketing or task workflows for content authoring jobs.
 * Community groups and message threads: create interest groups with notification opt in, internal work groups or start a discussion thread about any concept on the platform like future plans for a content entity.
 
+## Install
+
+```sh
+npm install @baack-software/baack-ts-client
+```
+
+The package is ESM-only and needs Node 18 or later.
+
 ## Usage
 
 The Baack client provides a baseline for managing content and experience related representations based on the permissions

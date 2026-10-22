@@ -20,9 +20,17 @@ export class BaackApiError extends Error {
     readonly url: string,
     /** The JSON body that was sent, when there was one, for debugging (not multipart uploads). */
     readonly requestBody?: string,
+    /** How long the API asked callers to wait before trying again (its `Retry-After` header), when it said. */
+    readonly retryAfterMs?: number,
   ) {
     super(`Baack API Error [${status}]: ${body || statusText}`);
   }
+
+  /**
+   * When the client's `failureGuard` holds this request back, the time (ms since the epoch) before which the same
+   * request isn't sent again: until then it fails at once with this error. Use it to tell the user when to try again.
+   */
+  heldUntil?: number;
 
   get isUnauthorized(): boolean {
     return this.status === 401;
@@ -45,12 +53,21 @@ export class BaackApiError extends Error {
   }
 
   /**
-   * Whether the API refused the request itself: a 4xx other than a timeout (408) or rate limit (429), such as a
-   * missing required field. These are permanent: sending the same request again gets the same answer, so act on
-   * `apiError` (for example its `apiCode` and `detail`) or change the request, and never loop on it.
+   * Whether the API refused the request: a 4xx other than a timeout (408) or rate limit (429). Some refusals depend
+   * on state outside the request, such as an expired session (401) or a missing entity (404), and the same request
+   * may succeed later; an invalid request (`isInvalidRequest`) never does.
    */
   get isRefused(): boolean {
     return this.status >= 400 && this.status < 500 && this.status !== 408 && this.status !== 429;
+  }
+
+  /**
+   * Whether the request itself is invalid (400, 405, 413, 414, 415, 422 or 431), for example a missing required field
+   * or an invalid representation; `apiError` says which. This is permanent: sending the same request again breaks the
+   * contract again, so act on `apiError` (its `apiCode` and `detail`) or change the request, and never loop on it.
+   */
+  get isInvalidRequest(): boolean {
+    return INVALID_REQUEST_STATUSES.has(this.status);
   }
 
   /** Whether the same request may succeed later: a server error, a timeout (408) or a rate limit (429). */
@@ -80,6 +97,9 @@ export class BaackApiError extends Error {
     }
   }
 }
+
+/** Statuses that say the request itself is invalid, so sending it again unchanged gets the same answer. */
+const INVALID_REQUEST_STATUSES = new Set([400, 405, 413, 414, 415, 422, 431]);
 
 export function isBaackApiError(error: unknown): error is BaackApiError {
   return error instanceof BaackApiError;

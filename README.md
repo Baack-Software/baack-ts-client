@@ -92,19 +92,25 @@ try {
 A network failure (no response at all) rejects with fetch's own error. An empty response body, such as a `204` from a
 delete, resolves to `undefined`.
 
-Two kinds of failure need different handling, and the error says which:
+Failures need different handling, and the error says which:
 
-- **`isRefused`**: a 4xx other than a timeout (`408`) or rate limit (`429`). The request itself is wrong, and the API
-  usually says how: for example `{ "apiCode": "REPRESENTATION_MISSING_REQUIRED_FIELD", "detail": "updatedTimestamp" }`.
-  It's permanent: sending the same request again gets the same answer, so act on `apiError`, change the request, or
-  tell the user. Never retry it unchanged.
-- **`isRetryable`**: a 5xx, `408` or `429`. The same request may succeed later, after a wait.
+- **`isInvalidRequest`**: a `400` (or `405`, `413`, `414`, `415`, `422`, `431`). The request itself is invalid, and the
+  API usually says how: for example `{ "apiCode": "REPRESENTATION_MISSING_REQUIRED_FIELD", "detail": "updatedTimestamp" }`.
+  It's permanent: sending the same request again breaks the contract again, so act on `apiError`, change the request,
+  or tell the user. Never retry it unchanged.
+- **`isRefused`**: any 4xx other than a timeout (`408`) or rate limit (`429`). Besides invalid requests, this covers
+  refusals that depend on state outside the request, such as an expired session (`401`) or a missing entity (`404`):
+  the same request may succeed later.
+- **`isRetryable`**: a 5xx, `408` or `429`. The same request may succeed later, after a wait. `retryAfterMs` carries the
+  API's `Retry-After`, when it sent one.
 
-The client guards against loops either way (`failureGuard`, on by default): after a refusal it won't send the same
-request (method, URL and body) again for 5 minutes, and after a server error, timeout, rate limit or network failure
-it waits 1 second, doubling up to 1 minute, before sending the same request again. Until then a repeat fails at once
-with the same error, without a request. A different request is always sent, and a success clears the record. Tune it
-with `failureGuard: { refusedHoldMs, backoffMs, maxBackoffMs }`, or turn it off with `failureGuard: false`. A caller that
+The client guards against loops (`failureGuard`, on by default). After an invalid request it won't send the same
+request again for 5 minutes. After any other failure (another 4xx, a server error, timeout, rate limit or network
+failure) it waits 1 second, doubling up to 1 minute, with up to a fifth more at random, and longer if the API's
+`Retry-After` says so. Until then a repeat fails at once with the same error, without a request, and the error's
+`heldUntil` says when it will be sent again. The same request means the same method, URL, body and per-request
+headers; a different request is always sent, and a success clears the record. Uploads aren't guarded. Tune it with
+`failureGuard: { refusedHoldMs, backoffMs, maxBackoffMs }`, or turn it off with `failureGuard: false`. A caller that
 retries on its own schedule (such as a build reader riding out a brief outage) should turn it off, or its retries
 inside the wait fail at once.
 

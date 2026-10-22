@@ -15,19 +15,22 @@ export interface BaackConfig {
    * Stops a failed request being sent again and again, for example by a caller that retries on every render. On by
    * default; `false` turns it off.
    *
-   * - A refused request (`BaackApiError.isRefused`: a 4xx such as a missing required field) is permanent: the same
-   *   request (method, URL and body) isn't sent again for `refusedHoldMs`, and fails at once with the same error.
-   * - After a server error, timeout, rate limit or network failure, the same request waits `backoffMs`, doubling with
-   *   each failure in a row up to `maxBackoffMs`, and fails at once with the last error until then.
+   * - An invalid request (`BaackApiError.isInvalidRequest`: a 400 such as a missing required field) is permanent: the
+   *   same request isn't sent again for `refusedHoldMs`, and fails at once with the same error.
+   * - After any other failure (another 4xx such as an expired session, a server error, a timeout, a rate limit or a
+   *   network failure) the same request waits `backoffMs`, doubling with each failure in a row up to `maxBackoffMs`,
+   *   plus up to a fifth more at random so many clients don't all try again together, and fails at once with the last
+   *   error until then. A longer `Retry-After` from the API is honoured.
    *
-   * A different request (another body, URL or method) is always sent, and a success clears the request's record.
-   * The client doesn't retry by itself.
+   * The same request means the same method, URL, body and per-request headers. A different request is always sent,
+   * and a success clears the request's record. Uploads (`upload`) aren't guarded. The client doesn't retry by itself.
+   * A held `BaackApiError` says until when in `heldUntil`.
    */
   failureGuard?: FailureGuard | false;
 }
 
 export interface FailureGuard {
-  /** How long a refused request isn't sent again unchanged. Default 5 minutes. */
+  /** How long an invalid request isn't sent again unchanged. Default 5 minutes. */
   refusedHoldMs?: number;
   /** The wait after the first failure that may pass. Default 1 second. */
   backoffMs?: number;
@@ -39,6 +42,9 @@ const GUARD_DEFAULTS: Required<FailureGuard> = { refusedHoldMs: 300_000, backoff
 
 /** The most failed requests a client remembers; the oldest is forgotten first. */
 const MAX_REMEMBERED_FAILURES = 500;
+
+/** The most a backoff wait is lengthened at random, as a fraction of it. */
+const BACKOFF_JITTER = 0.2;
 
 interface FailedRequest {
   error: unknown;
@@ -68,7 +74,7 @@ export class BaackClient {
   private defaultHeaders: Record<string, string>;
   private credentials: BaackConfig['credentials'];
   private guard: Required<FailureGuard> | undefined;
-  /** Recently failed requests, by method, URL and body. */
+  /** Recently failed requests, by method, URL, body and per-request headers. */
   private failed = new Map<string, FailedRequest>();
 
   constructor(config: BaackConfig) {
@@ -118,8 +124,11 @@ export class BaackClient {
 
     const method = options.method ?? Method.READ;
     const sent = typeof init.body === 'string' ? init.body : undefined;
-    const key = `${method} ${url.toString()} ${sent ?? ''}`;
-    const held = this.guard && this.failed.get(key);
+    // A multipart body (an upload) can't be told apart cheaply, so uploads aren't guarded.
+    const key = init.body === undefined || sent !== undefined
+      ? `${method} ${url.toString()} ${sent ?? ''} ${headerKey(options.headers)}`
+      : undefined;
+    const held = this.guard && key !== undefined && this.failed.get(key);
     if (held && Date.now() < held.until) throw held.error;
 
     let response: Response;
@@ -133,24 +142,30 @@ export class BaackClient {
     const text = await response.text();
 
     if (!response.ok) {
-      const error = new BaackApiError(response.status, response.statusText, text, method, url.toString(), sent);
-      this.recordFailure(key, error, error.isRefused);
+      const retryAfterMs = parseRetryAfter(response.headers.get('Retry-After'));
+      const error = new BaackApiError(response.status, response.statusText, text, method, url.toString(), sent, retryAfterMs);
+      this.recordFailure(key, error, error.isInvalidRequest);
       throw error;
     }
 
-    this.failed.delete(key);
+    if (key !== undefined) this.failed.delete(key);
     return (text ? JSON.parse(text) : undefined) as T;
   }
 
   /** Remembers a failed request, so the guard can hold back the same request (see `BaackConfig.failureGuard`). */
-  private recordFailure(key: string, error: unknown, refused: boolean): void {
-    if (!this.guard) return;
+  private recordFailure(key: string | undefined, error: unknown, invalid: boolean): void {
+    if (!this.guard || key === undefined) return;
     const failures = (this.failed.get(key)?.failures ?? 0) + 1;
-    const wait = refused
-      ? this.guard.refusedHoldMs
-      : Math.min(this.guard.backoffMs * 2 ** (failures - 1), this.guard.maxBackoffMs);
+    const backoff = Math.min(this.guard.backoffMs * 2 ** (failures - 1), this.guard.maxBackoffMs);
+    const retryAfterMs = error instanceof BaackApiError ? error.retryAfterMs ?? 0 : 0;
+    const wait = Math.max(
+      invalid ? this.guard.refusedHoldMs : backoff * (1 + Math.random() * BACKOFF_JITTER),
+      retryAfterMs,
+    );
+    const until = Date.now() + wait;
+    if (error instanceof BaackApiError) error.heldUntil = until;
     this.failed.delete(key);
-    this.failed.set(key, { error, until: Date.now() + wait, failures });
+    this.failed.set(key, { error, until, failures });
     if (this.failed.size > MAX_REMEMBERED_FAILURES) this.failed.delete(this.failed.keys().next().value!);
   }
 
@@ -230,6 +245,24 @@ export class BaackClient {
  */
 function join(endpoint: string, urn: string): string {
   return endpoint.endsWith('/') && urn.startsWith('/') ? endpoint + urn.slice(1) : endpoint + urn;
+}
+
+/** The per-request headers as part of the guard's key, in a stable order. */
+function headerKey(headers: RequestInit['headers']): string {
+  if (!headers) return '';
+  return JSON.stringify(Object.entries(headers as Record<string, string>).sort(([a], [b]) => a.localeCompare(b)));
+}
+
+/**
+ * Reads a `Retry-After` header, given in seconds or as an HTTP date, as milliseconds from now. Undefined when there is
+ * no header or it can't be read.
+ */
+function parseRetryAfter(header: string | null): number | undefined {
+  if (header === null || header.trim() === '') return undefined;
+  const seconds = Number(header);
+  if (Number.isFinite(seconds)) return seconds >= 0 ? seconds * 1000 : undefined;
+  const date = Date.parse(header);
+  return Number.isNaN(date) ? undefined : Math.max(0, date - Date.now());
 }
 
 function jsonInit(method: Method, body: unknown, headers?: Record<string, string>): RequestInit {

@@ -131,7 +131,8 @@ test('after a server error the same request backs off, doubling, then is sent ag
   assert.equal(calls.length, 2);
 
   respond(200, '{"urn":"e1"}');
-  await wait(40);
+  // Up to 96 ms with jitter.
+  await wait(50);
   assert.deepEqual(await guarded.read(Endpoint.ENTITY, 'e1'), { urn: 'e1' });
   assert.equal(calls.length, 3);
 
@@ -141,6 +142,69 @@ test('after a server error the same request backs off, doubling, then is sent ag
   await wait(50);
   await guarded.read(Endpoint.ENTITY, 'e1').catch(() => undefined);
   assert.equal(calls.length, 5);
+});
+
+test('an invalid request says until when it is held', async () => {
+  respond(400, MISSING_FIELD);
+  const guarded = new BaackClient({ baseUrl: 'https://api.example.test' });
+  const before = Date.now();
+  const error = await guarded.read(Endpoint.ENTITY, 'e1').catch((e) => e);
+  assert.equal(error.isInvalidRequest, true);
+  assert.ok(error.heldUntil >= before + 300_000);
+});
+
+test('other refusals back off rather than hold: a 401 is sent again once the wait has passed', async () => {
+  respond(401, '{"apiCode":"UNAUTHORIZED","detail":"Session expired","httpCode":401}');
+  const guarded = new BaackClient({ baseUrl: 'https://api.example.test', failureGuard: { backoffMs: 40 } });
+  const first = await guarded.read(Endpoint.ENTITY, 'e1').catch((e) => e);
+  assert.equal(first.isRefused, true);
+  assert.equal(first.isInvalidRequest, false);
+  assert.ok(first.heldUntil <= Date.now() + 48);
+  assert.equal(await guarded.read(Endpoint.ENTITY, 'e1').catch((e) => e), first);
+  assert.equal(calls.length, 1);
+
+  // Signed in again: the same request goes through.
+  respond(200, '{"urn":"e1"}');
+  await wait(50);
+  assert.deepEqual(await guarded.read(Endpoint.ENTITY, 'e1'), { urn: 'e1' });
+});
+
+test('a Retry-After longer than the backoff is honoured', async () => {
+  globalThis.fetch = async (url, init) => {
+    calls.push({ url, init });
+    return new Response(null, { status: 429, headers: { 'Retry-After': '120' } });
+  };
+  const guarded = new BaackClient({ baseUrl: 'https://api.example.test' });
+  const before = Date.now();
+  const error = await guarded.read(Endpoint.ENTITY, 'e1').catch((e) => e);
+  assert.equal(error.retryAfterMs, 120_000);
+  assert.ok(error.heldUntil >= before + 120_000);
+});
+
+test('the same request with different per-request headers is a different request', async () => {
+  respond(400, MISSING_FIELD);
+  const guarded = new BaackClient({ baseUrl: 'https://api.example.test' });
+  await assert.rejects(guarded.update(Endpoint.TASK, 't1', { name: 'a' }));
+  // Sending the missing CSRF header, say, is sent, even with the same body.
+  await assert.rejects(guarded.update(Endpoint.TASK, 't1', { name: 'a' }, { 'X-Baack-Request': '1' }));
+  await assert.rejects(guarded.read(Endpoint.ENTITY_VIEW, '/home', undefined, { 'Accept-Language': 'en-GB' }));
+  await assert.rejects(guarded.read(Endpoint.ENTITY_VIEW, '/home', undefined, { 'Accept-Language': 'pt-BR' }));
+  assert.equal(calls.length, 4);
+  await assert.rejects(guarded.read(Endpoint.ENTITY_VIEW, '/home', undefined, { 'Accept-Language': 'pt-BR' }));
+  assert.equal(calls.length, 4);
+});
+
+test('uploads are not guarded: a refused upload does not hold back other files', async () => {
+  respond(413, '');
+  const guarded = new BaackClient({ baseUrl: 'https://api.example.test' });
+  const form = () => {
+    const data = new FormData();
+    data.append('file', new Blob(['x']), 'a.png');
+    return data;
+  };
+  await assert.rejects(guarded.upload(Endpoint.IMAGE, form()));
+  await assert.rejects(guarded.upload(Endpoint.IMAGE, form()));
+  assert.equal(calls.length, 2);
 });
 
 test('network failures back off too', async () => {

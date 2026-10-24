@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.0.5
 
 - `Endpoint.PROJECT`.
 - The `TemplateItemHistory` type; `TemplateItem.history` is now a `TemplateItemHistory`.

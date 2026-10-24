@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.4
+
+- Breaking: `Identity.name` is now `Identity.label`, to match its use as the identity's label.
+
 ## 0.0.3
 
 - `failureGuard`, on by default: after an invalid request the same request isn't sent again for 5 minutes; after any

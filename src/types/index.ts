@@ -204,7 +204,7 @@ export interface Identity {
   urn: string;
   url: string;
   owner: Company;
-  name?: string | null;
+  label?: string | null;
   persons?: Person[];
   emails?: Email[];
   telephones?: Telephone[];

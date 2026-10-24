@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- `Endpoint.PROJECT`.
+- The `TemplateItemHistory` type; `TemplateItem.history` is now a `TemplateItemHistory`.
+- `MessageThreadNotification`, an alias of `ThreadNotification` named after its endpoint.
+
 ## 0.0.4
 
 - Breaking: `Identity.name` is now `Identity.label`, to match its use as the identity's label.

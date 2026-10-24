@@ -325,7 +325,7 @@ export interface TemplateItem {
   entity?: Entity | null;
   isPublished?: boolean | null;
   createdTimestamp?: string | null;
-  history?: TextItemHistory | null;
+  history?: TemplateItemHistory | null;
 }
 
 export interface BooleanItem {
@@ -557,6 +557,13 @@ export interface ReferenceItemHistory {
   item?: ReferenceItem | null;
   pagination?: Pagination | null;
   history: ReferenceItem[];
+  url: string;
+}
+
+export interface TemplateItemHistory {
+  item?: TemplateItem | null;
+  pagination?: Pagination | null;
+  history: TemplateItem[];
   url: string;
 }
 
@@ -940,6 +947,9 @@ export interface ThreadNotification {
   notificationCount: number;
   updatedTimestamp: string;
 }
+
+/** A thread notification, named after its endpoint (`Endpoint.MESSAGE_THREAD_NOTIFICATION`). */
+export type MessageThreadNotification = ThreadNotification;
 
 
 

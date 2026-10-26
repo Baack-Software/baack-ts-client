@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- `Endpoint.DEAL`, `Endpoint.LEAD` and `Endpoint.INVOICE_LINE`.
+- Sales and invoicing types: `Lead`, `Deal` (its `leadSource` is a `Lead`), `Money`, `PaymentInvoice`,
+  `PaymentInvoiceLine`, `PaymentInvoiceIdentifier`, `Remitter` and `Recipient`, with their status unions.
+- `MessageThread.invoices`.
+- Search: the `DEAL`, `LEAD` and `PAYMENT_INVOICE` scopes and result types.
+- `ApiCode` `NOT_AUTHORISED`.
+- `ImageItemFile` for image uploads, and `WebhookEventEnvelope` for webhook deliveries.
+
 ## 0.0.5
 
 - `Endpoint.PROJECT`.

@@ -19,6 +19,8 @@ export const Endpoint = Object.freeze({
     COMPANY: '/n/v1/company/',
     DATE_TIME: '/n/v1/datetimeitem/',
     DATE_TIME_HISTORY: '/n/v1/datetimeitemhistory/',
+    /** A deal sourced from a lead, which results in invoices when won. */
+    DEAL: '/n/v1/deal/',
     DOUBLE: '/n/v1/doubleitem/',
     DOUBLE_HISTORY: '/n/v1/doubleitemhistory/',
     EMAIL: '/n/v1/email/',
@@ -32,10 +34,14 @@ export const Endpoint = Object.freeze({
     IMAGE: '/n/v1/imageitem/',
     IMAGE_HISTORY: '/n/v1/imageitemhistory/',
     IMAGE_FILE: '/n/v1/imageitemfile',
+    /** A line of a payment invoice. */
+    INVOICE_LINE: '/n/v1/invoiceline/',
     JSON: '/n/v1/jsonitem/',
     JSON_HISTORY: '/n/v1/jsonitemhistory/',
     LAT_LONG: '/n/v1/latlongitem/',
     LAT_LONG_HISTORY: '/n/v1/latlongitemhistory/',
+    /** A sales lead, for example a contact from a website form. A converted lead becomes a deal. */
+    LEAD: '/n/v1/lead/',
     LINK: '/n/v1/linkitem/',
     LINK_HISTORY: '/n/v1/linkitemhistory/',
     LONG: '/n/v1/longitem/',

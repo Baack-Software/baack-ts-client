@@ -18,6 +18,7 @@ export type ApiCode =
   | 'NOT_FOUND'
   | 'CREATE_SUCCESS'
   | 'BAD_REQUEST'
+  | 'NOT_AUTHORISED'
   | 'QUOTA_EXCEEDED';
 
 export interface ApiError {
@@ -568,6 +569,19 @@ export interface TemplateItemHistory {
 }
 
 
+/** The image file sizes an image item holds. */
+export type ImageItemSize = 'DEFAULT' | 'LARGE' | 'MEDIUM';
+
+/**
+ * The fields of an image file upload to `Endpoint.IMAGE_FILE`, sent as multipart form data (`BaackClient.upload`):
+ * the `src` file is stored as the image item's `imageItemSize` file. All are required.
+ */
+export interface ImageItemFile {
+  imageItemUrn: string;
+  imageItemSize: ImageItemSize;
+  src: string;
+}
+
 // ==========================================
 // PROJECT
 // ==========================================
@@ -740,11 +754,14 @@ export type SearchOrder = 'UNDEFINED' | 'NAME';
 export type IncludeScope = 
   | 'API_CLIENT'
   | 'COMPANY'
+  | 'DEAL'
   | 'ENTITY' 
   | 'ENTITY_LIST' 
   | 'GROUP' 
   | 'GROUP_MEMBERSHIP' 
   | 'IDENTITY' 
+  | 'LEAD'
+  | 'PAYMENT_INVOICE'
   | 'PERMISSION'
   | 'PROJECT' 
   | 'TASK'
@@ -758,11 +775,14 @@ export type IncludeScope =
 export type SearchItemType = 
   | 'API_CLIENT'
   | 'COMPANY'
+  | 'DEAL'
   | 'ENTITY' 
   | 'ENTITY_LIST' 
   | 'GROUP' 
   | 'GROUP_MEMBERSHIP' 
   | 'IDENTITY' 
+  | 'LEAD'
+  | 'PAYMENT_INVOICE'
   | 'PERMISSION'
   | 'PROJECT' 
   | 'TASK'
@@ -818,11 +838,14 @@ export interface SearchItem {
    */
   item?:
     | ApiClient
+    | Deal
     | Entity
     | EntityList
     | Group
     | GroupMembership
     | Identity
+    | Lead
+    | PaymentInvoice
     | Permission
     | Project
     | Task
@@ -920,6 +943,7 @@ export interface MessageThread {
   tasks?: Task[];
   projects?: Project[];
   entities?: Entity[];
+  invoices?: PaymentInvoice[];
   pagination?: Pagination;
   posts: ThreadPost[];
 }
@@ -1161,6 +1185,183 @@ export interface WebhookTrigger {
   timestamp?: string | null;
   /** Delivery attempts; their shape isn't specified yet */
   deliveries?: unknown[] | null;
+}
+
+
+/** What a webhook event is about. */
+export interface WebhookEventTarget {
+  urn?: string;
+  url?: string;
+}
+
+/**
+ * The envelope a webhook delivery is posted in: the trigger, the subscription it fired, and what changed. Named
+ * apart from `WebhookEvent`, the kind of change a subscription watches.
+ */
+export interface WebhookEventEnvelope {
+  trigger?: WebhookTrigger | null;
+  subscription?: WebhookSubscription | null;
+  v1?: WebhookEventTarget | null;
+}
+
+
+// ==========================================
+// SALES & INVOICING
+// ==========================================
+
+/**
+ * An amount of money. On write usually only `currencyCode` and `unitValue` are sent; the formatted fields are given
+ * on read.
+ */
+export interface Money {
+  /** An ISO 4217 code such as `GBP`. Required on create. */
+  currencyCode: string;
+  /** The value in the currency's smallest unit (pence, cents). Required on create. */
+  unitValue: number;
+  formattedValue?: string | null;
+  currencySymbol?: string | null;
+}
+
+/** Where a lead came from. */
+export type LeadSource = 'UNKNOWN' | 'ADS' | 'CALL' | 'EMAIL' | 'EVENT' | 'REFERRAL' | 'SOCIAL' | 'WEBSITE';
+
+/** How far a lead has been worked. */
+export type LeadStatus = 'NEW' | 'CONTACTED' | 'QUALIFIED';
+
+/** Whether a lead is still being worked, became a deal, or was closed. */
+export type LeadOutcome = 'IN_PROGRESS' | 'CONVERTED' | 'CLOSED';
+
+/**
+ * A sales lead or contact, from `Endpoint.LEAD`: for example a contact from a website form. A converted lead becomes
+ * a deal, with more detail about a specific proposition.
+ */
+export interface Lead {
+  urn: string;
+  url?: string;
+  owner?: Company | null;
+  title?: string | null;
+  source?: LeadSource | null;
+  status?: LeadStatus | null;
+  outcome?: LeadOutcome | null;
+  /** Why the lead was closed (max length 1024). */
+  closedReason?: string | null;
+  assignee?: Identity | null;
+  contactIdentity?: Identity | null;
+  contactCompany?: Company | null;
+  targetValue?: Money | null;
+  entity?: Entity | null;
+  createdTimestamp?: string | null;
+  updatedTimestamp?: string | null;
+}
+
+/** Whether a deal is still open, or was won or lost. */
+export type DealOutcome = 'OPEN' | 'WON' | 'LOST';
+
+/** A deal or prospect being developed with a customer, from `Endpoint.DEAL`. A won deal results in invoices. */
+export interface Deal {
+  urn: string;
+  owner?: Company | null;
+  title?: string | null;
+  /** The deal's workflow stage. */
+  stage?: WorkflowStage | null;
+  assignee?: Identity | null;
+  outcome?: DealOutcome | null;
+  /** Why the deal was lost (max length 1024). */
+  lostReason?: string | null;
+  /** The lead the deal came from. */
+  leadSource?: Lead | null;
+  /** The chance of winning the deal. */
+  probability?: number | null;
+  targetValue?: Money | null;
+  /** When the deal is expected to close (ISO 8601) */
+  targetCloseTimestamp?: string | null;
+  /** When the deal closed (ISO 8601) */
+  closeTimestamp?: string | null;
+  createdTimestamp?: string | null;
+  updatedTimestamp?: string | null;
+  entity?: Entity | null;
+  contactCompanies?: Company[];
+  /** Ignored on update. */
+  contactIdentities?: Identity[];
+  /** Ignored on update. */
+  invoices?: PaymentInvoice[];
+}
+
+/** The stages of a payment invoice. */
+export type PaymentInvoiceStatus = 'DRAFT' | 'IN_REVIEW' | 'AUTHORISED' | 'PENDING' | 'VOIDED' | 'PAID' | 'REFUNDED';
+
+/** Whether an invoice's line prices include tax. */
+export type LineItemTax = 'EXCLUSIVE' | 'INCLUSIVE' | 'NO_TAX';
+
+/** How an invoice line is taxed. */
+export type Taxability = 'TAXABLE' | 'NON_TAXABLE' | 'TAX_EXEMPT' | 'PARTIALLY_TAXABLE' | 'NOT_APPLICABLE';
+
+/** The company or identity that pays an invoice. */
+export interface Remitter {
+  company?: Company | null;
+  identity?: Identity | null;
+}
+
+/** The company or identity an invoice is made out by and paid to. */
+export interface Recipient {
+  company?: Company | null;
+  identity?: Identity | null;
+}
+
+/** An identifier for an invoice, such as an invoice number, within a `domain`. */
+export interface PaymentInvoiceIdentifier {
+  urn?: string;
+  domain?: string | null;
+  token?: string | null;
+}
+
+/** A payment invoice, payable or receivable, from `Endpoint.PAYMENT_INVOICE`. */
+export interface PaymentInvoice {
+  urn: string;
+  url?: string;
+  /** Required on create. */
+  owner?: Company | null;
+  status?: PaymentInvoiceStatus | null;
+  /** An ISO 4217 code such as `GBP`. */
+  currencyCode?: string | null;
+  lineItemTax?: LineItemTax | null;
+  remitter?: Remitter | null;
+  recipient?: Recipient | null;
+  subTotal?: Money | null;
+  discount?: Money | null;
+  tax?: Money | null;
+  total?: Money | null;
+  paid?: Money | null;
+  refunded?: Money | null;
+  /** When the invoice was issued (ISO 8601) */
+  issuedTimestamp?: string | null;
+  /** When payment is due (ISO 8601) */
+  dueTimestamp?: string | null;
+  /** When the invoice was paid in full (ISO 8601) */
+  fullyPaidTimestamp?: string | null;
+  updatedTimestamp?: string | null;
+  /** Ignored on update. */
+  identifiers?: PaymentInvoiceIdentifier[];
+  /** Ignored on update; create lines with `Endpoint.INVOICE_LINE`. */
+  lines?: PaymentInvoiceLine[];
+}
+
+/** A line of a payment invoice, from `Endpoint.INVOICE_LINE`. */
+export interface PaymentInvoiceLine {
+  urn: string;
+  /** The invoice the line is on. Required on create. */
+  paymentInvoice?: PaymentInvoice | null;
+  lineNumber?: number | null;
+  itemCode?: string | null;
+  description?: string | null;
+  quantity?: number | null;
+  unitPrice?: number | null;
+  price?: Money | null;
+  discountRate?: number | null;
+  discountPrice?: Money | null;
+  taxability?: Taxability | null;
+  taxName?: string | null;
+  tax?: Money | null;
 }
 
 

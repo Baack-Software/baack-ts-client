@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.0.6
 
 - `Endpoint.DEAL`, `Endpoint.LEAD` and `Endpoint.INVOICE_LINE`.
 - Sales and invoicing types: `Lead`, `Deal` (its `leadSource` is a `Lead`), `Money`, `PaymentInvoice`,

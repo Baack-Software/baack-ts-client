@@ -1262,8 +1262,8 @@ export interface Deal {
   urn: string;
   owner?: Company | null;
   title?: string | null;
-  /** The deal's workflow stage. */
-  stage?: WorkflowStage | null;
+  /** The deal's stage in a workflow (its pipeline), as a task's is. Null when not set. */
+  workflowStage?: WorkflowStage | null;
   assignee?: Identity | null;
   outcome?: DealOutcome | null;
   /** Why the deal was lost (max length 1024). */
@@ -1344,6 +1344,40 @@ export interface PaymentInvoice {
   identifiers?: PaymentInvoiceIdentifier[];
   /** Ignored on update; create lines with `Endpoint.INVOICE_LINE`. */
   lines?: PaymentInvoiceLine[];
+  /** Payments and refunds against the invoice. Ignored on update; create them with `Endpoint.INVOICE_REMITTANCE`. */
+  remittances?: PaymentInvoiceRemittance[];
+}
+
+/** Whether a remittance is money received for an invoice or a refund paid back. */
+export type RemittanceDirection = 'PAYMENT' | 'REFUND';
+
+/** Whether a remittance arrived, failed, or was reversed after arriving. */
+export type RemittanceStatus = 'RECEIVED' | 'FAILED' | 'REVERSED';
+
+/** How a remittance was paid. */
+export type RemittanceMethod = 'BANK_TRANSFER' | 'CARD_PAYMENT' | 'DIRECT_DEBIT' | 'CASH' | 'E_WALLET' | 'OTHER';
+
+/**
+ * A payment received against a payment invoice, or a refund paid back, from `Endpoint.INVOICE_REMITTANCE`. Listed on
+ * its invoice (`PaymentInvoice.remittances`); it has no owner of its own.
+ */
+export interface PaymentInvoiceRemittance {
+  urn: string;
+  url?: string;
+  /** The invoice it's against. Required on create. */
+  paymentInvoice?: PaymentInvoice | null;
+  remittanceDirection?: RemittanceDirection | null;
+  remittanceStatus?: RemittanceStatus | null;
+  remittanceMethod?: RemittanceMethod | null;
+  /** The amount, in the currency's smallest unit. */
+  value?: Money | null;
+  /** The bank or card reference. */
+  reference?: string | null;
+  /** Who paid: a company, an identity, or both. */
+  remittingCompany?: Company | null;
+  remittingIdentity?: Identity | null;
+  /** When it arrived: UTC, without a zone. */
+  receivedTimestamp?: string | null;
 }
 
 /** A line of a payment invoice, from `Endpoint.INVOICE_LINE`. */

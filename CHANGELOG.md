@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- `Endpoint.INVOICE_REMITTANCE` and `PaymentInvoiceRemittance` (with `RemittanceDirection`, `RemittanceStatus` and
+  `RemittanceMethod`): payments and refunds against a payment invoice, listed in `PaymentInvoice.remittances`.
+- `Deal.stage` is now `Deal.workflowStage`, as the API names it and as tasks have it.
+
 ## 0.0.6
 
 - `Endpoint.DEAL`, `Endpoint.LEAD` and `Endpoint.INVOICE_LINE`.

@@ -36,6 +36,8 @@ export const Endpoint = Object.freeze({
     IMAGE_FILE: '/n/v1/imageitemfile',
     /** A line of a payment invoice. */
     INVOICE_LINE: '/n/v1/invoiceline/',
+    /** A payment received against a payment invoice, or a refund paid back. */
+    INVOICE_REMITTANCE: '/n/v1/invoiceremittance/',
     JSON: '/n/v1/jsonitem/',
     JSON_HISTORY: '/n/v1/jsonitemhistory/',
     LAT_LONG: '/n/v1/latlongitem/',

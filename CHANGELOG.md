@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.0.7
 
 - `Endpoint.INVOICE_REMITTANCE` and `PaymentInvoiceRemittance` (with `RemittanceDirection`, `RemittanceStatus` and
   `RemittanceMethod`): payments and refunds against a payment invoice, listed in `PaymentInvoice.remittances`.

@@ -29,3 +29,11 @@ takes no body and returns the live item type. Until then, don't derive client ty
 A token whose role can write, or has `ALL` permissions, belongs only in server-side configuration (`.env`, a build or
 deploy secret), never in code that ships to a browser. Document the split more clearly and make it harder to ship
 write access to a browser by accident.
+
+## Type `language` from the API's accepted languages
+
+`Entity.language` is a plain `string`, commented "ISO 639-1", but the API accepts language tags such as `en-GB`: the
+accepted values are the `enum` on the entity's `language` field in `openapi.json` (about 1,070 values, including bare
+codes, regions, scripts and three-letter codes such as `ksh`). Export a `Language` type (and a list of values)
+generated from that enum, use it for `language` in the types, and correct the comment. Until then, the onboarding
+skill uses only browser-style tags: an ISO 639-1 code, optionally with a region (`en`, `en-GB`).

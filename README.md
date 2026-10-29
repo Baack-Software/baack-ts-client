@@ -2,6 +2,7 @@ The [Baack](https://www.baack.co) TypeScript client is provided to allow native 
 
 Baack offers digital experiences for:
 
+
 * [Content management](https://www.baack.co/solutions/content-management).
   * Rich [content type modelling](https://www.baack.co/docs/concepts/content-entities) ( Text, Markdown, Templates, Money, numbers, dates, boolean, Lat / Long etc).
   * Full [version history](https://www.baack.co/docs/concepts/versions).

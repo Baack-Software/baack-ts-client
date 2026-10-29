@@ -137,6 +137,27 @@ const client = new BaackClient({ baseUrl: 'https://api.baack.co', credentials: '
 `client.submitForm(endpoint, fields)` posts a urlencoded form (`URLSearchParams`), such as the account setup form
 (`Endpoint.ACCOUNT_SETUP`), and reads the JSON reply.
 
+### Webhooks
+
+`verifyWebhook` checks that a [webhook](https://www.baack.co/docs/guides/webhooks-getting-started) delivery came from
+Baack. Pass the body exactly as received (before any JSON parsing), the request headers and the subscription's secret;
+add `bearer` to also require your webhook API client's bearer token:
+
+```typescript
+import { verifyWebhook, WebhookVerificationError } from '@baack-software/baack-ts-client';
+
+try {
+  const delivery = await verifyWebhook({ body: await request.text(), headers: request.headers, secret, bearer });
+  // delivery.trigger.event is CREATE, UPDATE or DELETE; delivery.v1 links the record that changed.
+} catch (error) {
+  if (error instanceof WebhookVerificationError) return new Response(null, { status: 401 });
+  throw error;
+}
+```
+
+`createWebhookBearerToken(client, apiClient, expires)` creates that bearer token. Keep it with your endpoint's secrets:
+it's shown once.
+
 ## Feedback 
 We welcome feedback, please create feature requests and issues in GitHub to allow them to be easily tracked.
 

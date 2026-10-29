@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.0.8
+
+- `verifyWebhook` checks a webhook delivery's `Signature` (and, optionally, its Bearer or Basic `Authorization`) and
+  returns the parsed `WebhookDelivery`; it throws a `WebhookVerificationError` with the `reason` when it fails. Uses
+  Web Crypto only, so it runs in Node 18+, Cloudflare Workers, Deno, Bun and browsers.
+- `createWebhookBearerToken` creates a bearer token for a webhook API client, for Bearer-authenticated deliveries.
+
 ## 0.0.7
 
 - `Endpoint.INVOICE_REMITTANCE` and `PaymentInvoiceRemittance` (with `RemittanceDirection`, `RemittanceStatus` and

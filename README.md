@@ -1,13 +1,14 @@
-The [Baack](https://www.baack.co) TypeScript client is provided to allow native typescript integrations using Baack as their content or digital experience backend.
+The [Baack](https://www.baack.co) TypeScript client is provided to allow native typescript integrations using Baack as their [headless CMS](https://www.baack.co/solutions/content-management) or [digital experience](https://www.baack.co/blog/2026-baack-one-year-from-cms-to-dxp) backend.
 
 Baack offers digital experiences for:
 
-* [Content management](https://www.baack.co/docs/concepts/content-entities).
-  * Rich content type modelling ( Text, Markdown, Templates, Money, numbers, dates, boolean, Lat / Long etc).
-  * Full [content version history](https://www.baack.co/docs/concepts/versions).
-  * Preview drafts.
-* [Customer relationship management](https://www.baack.co/solutions/content-management) API: model your customers and employees with a rich identity model.
-* [Project and task management](https://www.baack.co/solutions/tasks): build internal ticketing or task workflows for content authoring jobs.
+
+* [Content management](https://www.baack.co/solutions/content-management).
+  * Rich [content type modelling](https://www.baack.co/docs/concepts/content-entities) ( Text, Markdown, Templates, Money, numbers, dates, boolean, Lat / Long etc).
+  * Full [version history](https://www.baack.co/docs/concepts/versions).
+  * [Preview drafts](https://www.baack.co/blog/editing-content-with-preview).
+* [Customer relationship management](https://www.baack.co/solutions/crm) API: model your customers and employees with a rich [identity model](https://www.baack.co/docs/reference/identity).
+* [Project and task management](https://www.baack.co/solutions/tasks): build internal ticketing or task [workflows](https://www.baack.co/docs/reference/workflow) for content authoring jobs.
 * [Community groups and message threads](https://www.baack.co/solutions/communities): create interest groups with notification opt in, internal work groups or start a discussion thread about any concept on the platform like future plans for a content entity.
 
 ## Install
@@ -20,8 +21,9 @@ The package is ESM-only and needs Node 18 or later.
 
 ## Usage
 
-The Baack client provides a baseline for managing content and experience related representations based on the permissions
+The Baack client provides a baseline for managing content and experience related representations based on the [permissions](https://www.baack.co/docs/concepts/permissions)
 of the client connecting to the platform.
+To create an API client and its bearer token, follow [Getting started with Baack APIs](https://www.baack.co/docs/guides/getting-started).
 
 ```typescript
 import { BaackClient, Endpoint, EntityView, type Entity } from '@baack-software/baack-ts-client';
@@ -47,11 +49,11 @@ const body = view.markdown('body')?.value; // rendered HTML
 
 The entity view endpoint takes a path (for example `/home`) or an entity URN. Most of the time you'll use the
 combination of path, `language` and `variant`. The API respects the `language` parameter, or the reader's
-`Accept-Language` preferences, so it can return a different language version from the one you addressed: request an
+`Accept-Language` preferences, so it can return a different [language version](https://www.baack.co/docs/concepts/languages-variants) from the one you addressed: request an
 en-US entity's URN from a browser that prefers pt-BR and, if a pt-BR version exists, you'll get that entity, with its
 own URN. When you send both, `language` comes first and the `Accept-Language` preferences are the fallbacks. Check
 `entity.language` and `entity.urn` to see which version came back. Pass `version: 'LATEST'` to read the latest version,
-including unpublished drafts, for previews.
+including [unpublished drafts](https://www.baack.co/docs/concepts/versions), for previews.
 
 A URN or path is a locator, not a promise of that exact entity: even `GET /v/v1/entityview/<urn-of-an-en-GB-entity>`
 can return a de-DE entity with its own URN. Always key on the returned `urn`. A browser sends its own
@@ -67,11 +69,11 @@ The view also returns `alternativeLanguages`: the other language versions of the
 for `<link rel="alternate" hreflang>`. Map each to a URL however your site routes languages.
 
 Responses are shallow: a linked object is the same type with only its `urn` (and `url`) set, never expanded. An
-entity list (`Endpoint.ENTITY_LIST`) returns each `entity` that way, so read each entity's view to render it; a text
+[entity list](https://www.baack.co/docs/reference/entitylist) (`Endpoint.ENTITY_LIST`) returns each `entity` that way, so read each entity's view to render it; a text
 item read from its own endpoint has a parent `entity` reference, and inside an entity's `texts` it has none. The API
 is permissive in the other direction: send full objects where a link is expected and it stores only their URNs.
 
-`EntityView` hides the raw content representation's navigation: `view.text(name)`, `view.markdown(name)`,
+`EntityView` hides the raw [content representation](https://www.baack.co/docs/reference/content-items)'s navigation: `view.text(name)`, `view.markdown(name)`,
 `view.image(name)` and the other accessors return the item at sort order 0, or pass a sort order to reach a
 repeated field (`view.text('caption', 2)`, or `view.texts('caption')` for all of them). We're working on more helpers
 for frameworks like Astro, Next and React; please request specific approaches via the issues.

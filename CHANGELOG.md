@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.9
+
+- `Endpoint.STAT_SIZE`: a company's storage, the bytes stored each day per type of record, as storage is billed.
+- `RechartData` and `RechartPoint`, the API's `rechartdata`, which every stats endpoint answers with. A point's value
+  can be null. `UsageStats` and `UsagePoint` are now deprecated aliases of them.
+
 ## 0.0.8
 
 - `verifyWebhook` checks a webhook delivery's `Signature` (and, optionally, its Bearer or Basic `Authorization`) and

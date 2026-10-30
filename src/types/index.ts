@@ -1403,18 +1403,33 @@ export interface PaymentInvoiceLine {
 // STATISTICS
 // ==========================================
 
-/** One day of a usage series: its date (`2026-10-17`) and a count per series key. */
-export interface UsagePoint {
+/**
+ * One day of a daily stats series: its date (`2026-10-17`) and a value per
+ * series key, or null for a key with none that day.
+ */
+export interface RechartPoint {
   date: string;
-  [series: string]: number | string;
+  [series: string]: number | string | null;
 }
 
 /**
- * A company's daily API usage from `Endpoint.STAT_USAGE`, shaped for charts:
- * a label per series key, and one point a day. Days without calls are left
- * out. Readable only in an administrator's session.
+ * A daily stats series, the API's `rechartdata`, shaped for charts: a label
+ * per series key, and one point a day. Every stats endpoint answers with it:
+ *
+ * - `Endpoint.STAT_USAGE`: API calls a day. Days without calls are left out.
+ * - `Endpoint.STAT_SIZE`: bytes stored a day per type of record (such as
+ *   `TEXT_SIZE` or `SEARCH_SIZE`). A day without a snapshot is left out, as
+ *   nothing changed.
+ *
+ * Readable only in an administrator's session.
  */
-export interface UsageStats {
+export interface RechartData {
   chartConfig: Record<string, { label: string }>;
-  data: UsagePoint[];
+  data: RechartPoint[];
 }
+
+/** @deprecated Use `RechartData`, which every stats endpoint answers with. */
+export type UsageStats = RechartData;
+
+/** @deprecated Use `RechartPoint`. */
+export type UsagePoint = RechartPoint;

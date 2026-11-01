@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.0.10
 
 - `Endpoint.STAT_SEATS`: the users of a root company and its child companies each day (`USER_COUNT`), as plans bill
   them: against the most on any day of a month. On the local API so far.

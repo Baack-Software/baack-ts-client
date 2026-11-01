@@ -63,6 +63,7 @@ export const Endpoint = Object.freeze({
     PROJECT: '/n/v1/project/',
     ROLE: '/n/v1/role/',
     SEARCH : '/n/v1/search/',
+    STAT_SEATS: '/n/v1/stat/seats/',
     STAT_SIZE: '/n/v1/stat/size/',
     STAT_USAGE: '/n/v1/stat/usage/',
     REFERENCE: '/n/v1/referenceitem/',

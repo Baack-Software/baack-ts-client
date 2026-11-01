@@ -1420,6 +1420,9 @@ export interface RechartPoint {
  * - `Endpoint.STAT_SIZE`: bytes stored a day per type of record (such as
  *   `TEXT_SIZE` or `SEARCH_SIZE`). A day without a snapshot is left out, as
  *   nothing changed.
+ * - `Endpoint.STAT_SEATS`: users a day (`USER_COUNT`) of a root company and
+ *   its child companies, read by the root company's URN. Billed against the
+ *   most on any day of a month.
  *
  * Readable only in an administrator's session.
  */

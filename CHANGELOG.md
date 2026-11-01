@@ -1,9 +1,14 @@
 # Changelog
 
+## 0.0.11
+
+- `ClientContext.userIdentities` and `CompanyIdentity`: the signed-in user's identity in each company they administer,
+  which they post and act as there, created with their account at setup.
+
 ## 0.0.10
 
 - `Endpoint.STAT_SEATS`: the users of a root company and its child companies each day (`USER_COUNT`), as plans bill
-  them: against the most on any day of a month. On the local API so far.
+  them: against the most on any day of a month.
 
 ## 0.0.9
 

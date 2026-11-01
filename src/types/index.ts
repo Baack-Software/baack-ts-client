@@ -97,7 +97,18 @@ export interface ClientContext {
   client?: ApiClient | null;
   company?: Company | null;
   identity?: Identity | null;
+  /**
+   * The signed-in user's identity in each company they administer, which they
+   * post and act as there; `identity` is their own on Baack.
+   */
+  userIdentities?: CompanyIdentity[] | null;
   loginIframeSrc?: string | null;
+}
+
+/** A company and an identity within that company's scope. */
+export interface CompanyIdentity {
+  company?: Company | null;
+  identity?: Identity | null;
 }
 
 

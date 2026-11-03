@@ -822,10 +822,22 @@ export interface Search {
   order?: SearchOrder | null;
   /** The collection of scopes to include in the search scope */
   includeScopes: IncludeScope[];
+  /** Limits the search to what is in this context, such as one entity's tasks and the people related to it */
+  context?: SearchContext | null;
   /** The actual result items found by the search */
   items?: SearchItem[];
   /** Pagination details for navigating through large result sets */
   pagination?: Pagination | null;
+}
+
+/**
+ * What a search is limited to. With `entities`, a search returns only results related to those entities: the tasks
+ * associated with them (`TASK`, as references: URNs, no content) and the identities related to them (`IDENTITY`: their
+ * author, contributors and the assignees of their tasks), never the rest of the company.
+ */
+export interface SearchContext {
+  /** The entities the results must be related to, by URN */
+  entities?: { urn: string }[];
 }
 
 /**

@@ -16,3 +16,7 @@ export async function search(params: Search): Promise<boolean | number | undefin
     return isBaackApiError(error) ? error.status : undefined;
   }
 }
+
+export function entityTasks(urn: string): Search {
+  return { includeScopes: ['TASK', 'IDENTITY'], context: { entities: [{ urn }] } };
+}

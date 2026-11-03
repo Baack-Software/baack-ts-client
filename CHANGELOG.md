@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.12
+
+- `Search.context` and `SearchContext`: limits a search to what is related to the given entities, their tasks (as
+  references) and the people related to them (author, contributors and the assignees of their tasks).
+
 ## 0.0.11
 
 - `ClientContext.userIdentities` and `CompanyIdentity`: the signed-in user's identity in each company they administer,

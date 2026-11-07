@@ -17,7 +17,7 @@ Baack offers digital experiences for:
 npm install @baack-software/baack-ts-client
 ```
 
-The package is ESM-only and needs Node 18 or later.
+The package is ESM-only and needs Node 20 or later.
 
 ## Usage
 

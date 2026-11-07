@@ -13,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # Matches engines.node in package.json (>=18).
-        node-version: [ 18, 20, 22 ]
+        # Matches engines.node in package.json (>=20).
+        node-version: [ 20, 22 ]
     steps:
       - name: 'Checkout repository'
         uses: actions/checkout@v4

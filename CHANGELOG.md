@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Needs Node 20 or later (`engines.node` is now `>=20`). Node 18, end of life since April 2025, has no global `crypto`,
+  so `verifyWebhook` and `createWebhookBearerToken` never worked there, whatever 0.0.8 said.
+
 ## 0.0.12
 
 - `Search.context` and `SearchContext`: limits a search to what is related to the given entities, their tasks (as

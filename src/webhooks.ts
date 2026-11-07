@@ -11,7 +11,7 @@
  *   const delivery = await verifyWebhook({ body: rawBody, headers: request.headers, secret, bearer: token });
  *   delivery.trigger.event;   // 'CREATE' | 'UPDATE' | 'DELETE'
  *
- * Uses Web Crypto only, so it runs in Node 18+, Cloudflare Workers, Deno, Bun and browsers.
+ * Uses Web Crypto only, so it runs in Node 20+, Cloudflare Workers, Deno, Bun and browsers.
  */
 
 import type { BaackClient } from './client.ts';

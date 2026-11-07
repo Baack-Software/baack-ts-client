@@ -37,3 +37,10 @@ accepted values are the `enum` on the entity's `language` field in `openapi.json
 codes, regions, scripts and three-letter codes such as `ksh`). Export a `Language` type (and a list of values)
 generated from that enum, use it for `language` in the types, and correct the comment. Until then, the onboarding
 skill uses only browser-style tags: an ISO 639-1 code, optionally with a region (`en`, `en-GB`).
+
+## Move off end-of-life Node versions
+
+Node 20 reached end of life in April 2026, but `engines.node` is `>=20` and CI tests only 20 and 22. Add Node 24 to
+the CI matrix, then decide whether to raise `engines.node` to `>=22` (a breaking change for Node 20 users, so note it
+in the changelog). Also move `actions/checkout` and `actions/setup-node` in `ci.yml` and `dependency-review.yml` past
+v4, which targets the deprecated Node 20 runtime, and bump `@types/node` to match the lowest supported version.

@@ -1063,16 +1063,57 @@ export type PermissionScope =
   | 'USER'
   | 'OAUTH_TOKEN';
 
-/** What a permission grant allows. */
+/**
+ * What a permission grant allows: a create, read, update and delete per area, and a few more (`CONTENT_VIEW`,
+ * `CONTENT_PUBLISH`, `COMMUNITY_MODERATE`, `STATS_READ`). Labels are explicit: none includes another, except `ALL`
+ * (every create, read, update and delete) and `ADMINISTER` (the same, for an account's admin).
+ */
 export type PermissionLabel =
   | 'ALL'
+  | 'ACCESS_CREATE'
+  | 'ACCESS_READ'
+  | 'ACCESS_UPDATE'
+  | 'ACCESS_DELETE'
+  | 'BILLING_CREATE'
+  | 'BILLING_READ'
+  | 'BILLING_UPDATE'
+  | 'BILLING_DELETE'
+  | 'COMMUNITY_READ'
+  | 'COMMUNITY_CREATE'
+  | 'COMMUNITY_MODERATE'
+  | 'COMMUNITY_UPDATE'
+  | 'COMMUNITY_DELETE'
+  | 'CONTENT_CREATE'
+  | 'CONTENT_DELETE'
+  | 'CONTENT_UPDATE'
+  | 'CONTENT_PUBLISH'
+  | 'CONTENT_READ'
+  | 'CONTENT_VIEW'
+  | 'CRM_CREATE'
+  | 'CRM_READ'
+  | 'CRM_UPDATE'
+  | 'CRM_DELETE'
+  | 'IDENTITY_CREATE'
+  | 'IDENTITY_DELETE'
+  | 'IDENTITY_READ'
+  | 'IDENTITY_UPDATE'
+  | 'PLATFORM_CREATE'
+  | 'PLATFORM_READ'
+  | 'PLATFORM_UPDATE'
+  | 'PLATFORM_DELETE'
+  | 'STATS_READ'
+  | 'WORK_CREATE'
+  | 'WORK_READ'
+  | 'WORK_UPDATE'
+  | 'WORK_DELETE'
   | 'CREATE'
   | 'READ'
   | 'UPDATE'
   | 'DELETE'
   | 'ADMINISTER'
   | 'MODERATE'
-  | 'ARCHIVE';
+  | 'ARCHIVE'
+  | 'PUBLISH';
 
 /**
  * A permission grant: a subject (e.g. an identity or API client) may do

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- `PermissionLabel` has every label the API grants: a create, read, update and delete per area (`CONTENT_READ`,
+  `CRM_UPDATE` and so on), plus `CONTENT_VIEW`, `CONTENT_PUBLISH`, `COMMUNITY_MODERATE`, `STATS_READ` and `PUBLISH`.
+
 - Needs Node 20 or later (`engines.node` is now `>=20`). Node 18, end of life since April 2025, has no global `crypto`,
   so `verifyWebhook` and `createWebhookBearerToken` never worked there, whatever 0.0.8 said.
 

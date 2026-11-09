@@ -1,6 +1,12 @@
 # Changelog
 
-## Unreleased
+## 0.0.14
+
+- `ApiClient.bearerTokens`: the client's bearer tokens, as its read lists them, each with its URN, its expiry and
+  `bearerToken` as the token's SHA-256 (lowercase hex), never the token itself, which only the reply to a create
+  carries. Read only. To revoke a token, update its `expirationTimestamp` to now: it stays listed, expired.
+
+## 0.0.13
 
 - `PermissionLabel` has every label the API grants: a create, read, update and delete per area (`CONTENT_READ`,
   `CRM_UPDATE` and so on), plus `CONTENT_VIEW`, `CONTENT_PUBLISH`, `COMMUNITY_MODERATE`, `STATS_READ` and `PUBLISH`.

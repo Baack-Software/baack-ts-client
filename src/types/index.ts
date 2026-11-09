@@ -61,10 +61,16 @@ export interface ApiClient {
   /** The owning company this API Client is associated with */
   owner?: Company | null;
   /** 
-   * The client ID of this client. Used for identification in 
-   * third-party integrations or OAuth contexts. 
+   * The client ID of this client. Used for identification in
+   * third-party integrations or OAuth contexts.
    */
   clientID: string;
+  /**
+   * The client's bearer tokens, as its read lists them: each one's URN, when it stops working (missing when it
+   * never does), and `bearerToken` as the SHA-256 of the token, never the token itself. Read only: leave it out of
+   * a create or update, and revoke a token through `Endpoint.BEARER_TOKEN`.
+   */
+  bearerTokens?: BearerToken[] | null;
 }
 
 /**
@@ -1223,12 +1229,20 @@ export interface WebhookSubscription {
   secret?: string | null;
 }
 
-/** A bearer token for an API client, from `Endpoint.BEARER_TOKEN`. The token is returned when it's created. */
+/**
+ * A bearer token for an API client, from `Endpoint.BEARER_TOKEN`, or listed in its client's `bearerTokens`. The token
+ * itself is returned only when it's created. To revoke one, update its `expirationTimestamp` to now: it stops working,
+ * and stays listed as expired.
+ */
 export interface BearerToken {
   urn: string;
   url?: string;
   apiClient?: ApiClient | null;
-  /** The token itself: keep it server-side, and never log or display it after it's first shown. */
+  /**
+   * In the reply to a create, the token itself: keep it server-side, and never log or display it after it's first
+   * shown. In any later read, the token's SHA-256 as lowercase hex, to find a token you hold
+   * (`printf %s "$TOKEN" | sha256sum`).
+   */
   bearerToken?: string | null;
   /** When the token stops working (ISO 8601); required on create. */
   expirationTimestamp?: string | null;

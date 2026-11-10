@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.15
+
+- `LinkItem.target`: where the link opens, as the anchor's `target` attribute (such as `_blank`), up to 256 characters.
+  Optional, like `rel`; a write without it leaves the version with none.
+
 ## 0.0.14
 
 - `ApiClient.bearerTokens`: the client's bearer tokens, as its read lists them, each with its URN, its expiry and

@@ -7,6 +7,7 @@ import {
   isBaackApiError,
   type ApiClient,
   type Entity,
+  type LinkItem,
   type Search,
 } from '@baack-software/baack-ts-client';
 
@@ -35,4 +36,9 @@ export async function lastingTokens(urn: string): Promise<string[]> {
   return (apiClient.bearerTokens ?? [])
     .filter((token) => !token.expirationTimestamp)
     .map((token) => token.bearerToken ?? token.urn);
+}
+
+/** The attributes a link item gives its anchor, including where it opens. */
+export function anchor(link: LinkItem): { href: string; rel?: string; target?: string } {
+  return { href: link.href, ...(link.rel ? { rel: link.rel } : {}), ...(link.target ? { target: link.target } : {}) };
 }

@@ -454,6 +454,8 @@ export interface LinkItem {
   sortOrder: number;
   href: string;
   rel?: string;
+  /** Where the link opens, as the anchor's `target` attribute (such as "_blank"); up to 256 characters. */
+  target?: string;
   text?: string;
   lang?: string;
   entity?: Entity | null;

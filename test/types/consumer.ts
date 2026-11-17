@@ -8,6 +8,7 @@ import {
   type ApiClient,
   type Entity,
   type LinkItem,
+  type Role,
   type Search,
 } from '@baack-software/baack-ts-client';
 
@@ -41,4 +42,11 @@ export async function lastingTokens(urn: string): Promise<string[]> {
 /** The attributes a link item gives its anchor, including where it opens. */
 export function anchor(link: LinkItem): { href: string; rel?: string; target?: string } {
   return { href: link.href, ...(link.rel ? { rel: link.rel } : {}), ...(link.target ? { target: link.target } : {}) };
+}
+
+/** A company's roles: a ROLE search, then each role read in full. */
+export async function roles(company: string): Promise<Role[]> {
+  const found = await client.search({ owner: { urn: company, url: '' }, includeScopes: ['ROLE'] });
+  const urns = (found.items ?? []).filter((item) => item.type === 'ROLE').map((item) => item.urn);
+  return Promise.all(urns.map((urn) => client.read<Role>(Endpoint.ROLE, urn)));
 }

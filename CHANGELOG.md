@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.16
+
+- Search takes `ROLE` in `includeScopes`, and its items may be roles (`SearchItemType`): a company's roles, each
+  read in full with `Endpoint.ROLE`.
+
 ## 0.0.15
 
 - `LinkItem.target`: where the link opens, as the anchor's `target` attribute (such as `_blank`), up to 256 characters.
